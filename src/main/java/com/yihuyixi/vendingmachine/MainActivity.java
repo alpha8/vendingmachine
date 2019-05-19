@@ -1,188 +1,130 @@
 package com.yihuyixi.vendingmachine;
 
-import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.Toast;
+import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
-import com.example.mylibrary.serialportlibrary.WMSerialportManager;
-import com.example.mylibrary.serialportlibrary.listener.OnDataSentListener;
-import com.example.mylibrary.serialportlibrary.listener.WMDeviceToAppCallBack;
-import com.example.mylibrary.serialportlibrary.listener.WMSerialportCallBack;
-import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.adapter.SimpleAdapter;
-import com.youth.banner.Banner;
-import com.youth.banner.loader.ImageLoader;
+import com.yihuyixi.vendingmachine.api.Api;
+import com.yihuyixi.vendingmachine.bean.ProductInfo;
+import com.yihuyixi.vendingmachine.constants.AppConstants;
+import com.yihuyixi.vendingmachine.divider.DividerItemDecoration;
+import com.yihuyixi.vendingmachine.exception.NoDataException;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    private Banner mBanner;
+    private VideoView mVideo;
     private RecyclerView mRecyclerView;
-    private List<String> mDatas;
     private SimpleAdapter mAdapter;
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            Log.d("MainActivity", msg.toString());
+            switch(msg.what) {
+                case AppConstants.FLAG_GOODS:
+                    List<ProductInfo> products = (List<ProductInfo>) msg.obj;
+                    initRecyclerView(products);
+                    break;
+                case AppConstants.FLAG_NO_DATA:
+                    Toast.makeText(MainActivity.this, "网络故障，数据加载失败！", Toast.LENGTH_LONG).show();
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("Activity", "main is created.");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        initSliderView();
+        fetchGoodsData();
 //        setSystemUIVisible(false);
-        initSDK();
-        initSliderView();
-        initRecyclerView();
+        this.initVideoView();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    private void initVideoView() {
+        mVideo = findViewById(R.id.video);
+        mVideo.setMediaController(new MediaController(getApplicationContext()));
+//        mVideo.setVideoURI(Uri.parse("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/85f5d37d4564972818869478170/v.f20.mp4"));
+        mVideo.requestFocus();
+        mVideo.start();
+        mVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                mp.setLooping(true);
+            }
+        });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
-            case R.id.action_add:
-                this.mAdapter.addData(1);
-                break;
-            case R.id.action_delete:
-                this.mAdapter.removeData(1);
-                break;
-            case R.id.action_gridview:
-                this.mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-                break;
-            case R.id.action_listview:
-                this.mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-                break;
-            case R.id.action_hgridview:
-                StaggeredGridLayoutManager slm = new StaggeredGridLayoutManager(5, StaggeredGridLayoutManager.VERTICAL);
-                this.mRecyclerView.setLayoutManager(slm);
-                break;
-            case R.id.action_staggered:
-                Intent intent = new Intent(this, StaggeredGridActivity.class);
-                startActivity(intent);
-                break;
-        }
-        return true;
-    }
-
-    private void initRecyclerView() {
+    private void initRecyclerView(final List<ProductInfo> goods) {
         mRecyclerView = findViewById(R.id.recyclerview);
-        mDatas = new ArrayList<>();
-        for(int i = 'A'; i <= 'z'; i++) {
-            mDatas.add("" + (char)i);
-        }
-        mAdapter = new SimpleAdapter(getApplicationContext(), mDatas);
+        mAdapter = new SimpleAdapter(getApplicationContext(), goods);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-//        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this));
         mAdapter.setOnItemClickListener(new SimpleAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Toast.makeText(MainActivity.this, "click: " + position, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onItemLongClick(View view, int position) {
-                Toast.makeText(MainActivity.this, "long click: " + position, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, GoodsDetailActivity.class);
+                intent.putExtra(AppConstants.INTENT_GOODS, goods.get(position));
+                startActivity(intent);
             }
         });
     }
 
-    private void initSDK() {
-        final Context context = getApplicationContext();
-        WMSerialportManager.initWMSerialport(getApplicationContext(), 10 * 1000);   //overtime: 10s
-        WMSerialportManager.openSerialPort("ttyS3", new WMSerialportCallBack() {
+    private void fetchGoodsData() {
+        new Thread(new Runnable() {
             @Override
-            public void onSucceed(WMSSendType wmsSendType, Object o) {
-                Log.d("SDK", "open the serial port(ttyS3) success.");
-            }
-
-            @Override
-            public void onFailed(WMSSendType wmsSendType, int i) {
-                Log.d("SDK", "open the serial port(ttyS3) failed.");
-            }
-        });
-        WMSerialportManager.addOnDataSentListener(new OnDataSentListener() {
-            @Override
-            public void onDataSent(String s) {
-                Log.d("SDK", "sent data is " + s);
-            }
-        });
-        WMSerialportManager.addWMDeviceToAppCallBack(new WMDeviceToAppCallBack() {
-            @Override
-            public void onSuccess(WMSSendType wmsSendType, String s) {
-                Log.d("SDK", "DeviceToApp sendType=" + wmsSendType + ", text=" + s);
-            }
-
-            @Override
-            public void onFaild(WMSSendType wmsSendType, int i, List<String> list, String s) {
-                Log.d("SDK", "DeviceToApp failed sendType=" + wmsSendType + ", text=" + s);
-            }
-        });
-    }
-
-    private void initSliderView() {
-        mBanner = findViewById(R.id.mbanner);
-        int[] imgIds = new int[] { R.mipmap.slider1, R.mipmap.slider2, R.mipmap.slider3, R.mipmap.slider4};
-        List<Integer> images = new ArrayList<>();
-        for (int i = 0, len = imgIds.length; i < len; i++) {
-            images.add(imgIds[i]);
-            mBanner.setImageLoader(new ImageLoader() {
-                @Override
-                public void displayImage(Context context, Object path, ImageView imageView) {
-                    Glide.with(MainActivity.this).load(path).into(imageView);
+            public void run() {
+                Message message = mHandler.obtainMessage();
+                try {
+                    List<ProductInfo> products = Api.getInstance().getGoods(50);
+                    message.what = AppConstants.FLAG_GOODS;
+                    message.obj = products;
+                    mHandler.sendMessage(message);
+                } catch (NoDataException | IOException e) {
+                    message.what = AppConstants.FLAG_NO_DATA;
+                    mHandler.sendMessage(message);
                 }
-            });
-            mBanner.setImages(images);
-            mBanner.setDelayTime(3000);
-            mBanner.start();
-        }
+            }
+        }).start();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (mBanner != null) {
-            mBanner.startAutoPlay();
-        }
+        Log.d("MainActivity", "onStart");
     }
 
     @Override
     protected void onStop() {
-        Log.d("Activity", "onStop fired.");
         super.onStop();
-        if (mBanner != null) {
-            mBanner.stopAutoPlay();
-        }
-        WMSerialportManager.closeSerialPort();
+        mVideo.pause();
+        Log.d("MainActivity", "onStop");
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d("Activity", "onPause fired.");
-    }
-
-    public void checkout(View view){
-        int channelId = 0;
-        WMSerialportManager.setShipments(0, channelId, 1, 15 * 1000);
-        Log.d("Activity", "准备出货中..., 货架号：" + channelId);
+    protected void onResume() {
+        super.onResume();
+        mVideo.resume();
+        Log.d("MainActivity", "onResume");
     }
 
     private void setSystemUIVisible(boolean show) {
