@@ -9,6 +9,10 @@ public final class AppConstants {
     public static final int FLAG_GOODS = 1;
     public static final int FLAG_QRCODE_URL = 2;
     public static final int FLAG_ERROR = 3;
+    public static final int FLAG_SDK_SUCCESS = 4;
+    public static final int FLAG_SDK_FAIL = 5;
 
     public static final String INTENT_GOODS = "goodsinfo";
+
+    public static final String PAY_SUCCESS = "SUCCESS";
 }

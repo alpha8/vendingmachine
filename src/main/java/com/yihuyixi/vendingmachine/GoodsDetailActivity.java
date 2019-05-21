@@ -1,7 +1,6 @@
 package com.yihuyixi.vendingmachine;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -13,9 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.bumptech.glide.Glide;
 import com.yihuyixi.vendingmachine.api.Api;
+import com.yihuyixi.vendingmachine.api.Channels;
+import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
@@ -24,14 +24,14 @@ import com.yihuyixi.vendingmachine.vo.QrcodeVO;
 import com.youth.banner.Banner;
 import com.youth.banner.loader.ImageLoader;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GoodsDetailActivity extends AppCompatActivity {
     private Banner mBanner;
     private TextView mProductName;
     private ImageView mQrcode;
+    private ImageView mIvPhone;
+    private TextView mTvTips;
     private TextView mSellpoint;
     private TextView mPrice;
     private TextView mSalesCount;
@@ -39,6 +39,8 @@ public class GoodsDetailActivity extends AppCompatActivity {
     private PayVO mPayVO;
     private String outChannel;
 
+    private TextView mTvMsg;
+    private OrderPayStateTask mPayStateTask;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -49,6 +51,11 @@ public class GoodsDetailActivity extends AppCompatActivity {
                     String qrcodeUrl = String.format("%s/getQrcode?url=%s", AppConstants.WX_API, payVO.getCode_url());
                     Glide.with(GoodsDetailActivity.this).load(qrcodeUrl).into(mQrcode);
                     mQrcode.setVisibility(View.VISIBLE);
+                    mIvPhone.setVisibility(View.VISIBLE);
+                    mTvTips.setVisibility(View.VISIBLE);
+
+                    mPayStateTask = new OrderPayStateTask(GoodsDetailActivity.this, getApplicationContext());
+                    mPayStateTask.execute(payVO.getOut_trade_no(), outChannel);
                     break;
                 case AppConstants.FLAG_ERROR:
                     String errorMsg = (String) msg.obj;
@@ -83,7 +90,9 @@ public class GoodsDetailActivity extends AppCompatActivity {
         mSalesCount.setText(String.format("(已售:%s件)", productInfo.getSellCount()));
 
         mQrcode = findViewById(R.id.id_qrcode);
-        mQrcode.setImageResource(R.mipmap.qrcode);
+        mTvMsg = findViewById(R.id.tv_msg);
+        mIvPhone = findViewById(R.id.iv_phone);
+        mTvTips = findViewById(R.id.tv_tips);
     }
 
     private void initRecylcerView(List<String> icons) {
@@ -111,7 +120,8 @@ public class GoodsDetailActivity extends AppCompatActivity {
             public void run() {
                 QrcodeVO qrcode = new QrcodeVO();
                 qrcode.setProductId(mProductInfo.getId());
-                qrcode.setTotalFee(mProductInfo.getPrice());
+//                qrcode.setTotalFee(mProductInfo.getPrice());
+                qrcode.setTotalFee(0.01f);
                 qrcode.setDeviceInfo("名进投资大厦店");
                 qrcode.setBody(mProductInfo.getName());
                 qrcode.setDetail(mProductInfo.getName());
@@ -138,6 +148,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
     }
 
     public void goBack(View view) {
+        this.mPayStateTask.cancelJob();
         this.finish();
     }
 
@@ -147,6 +158,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
         if (mBanner != null) {
             mBanner.stopAutoPlay();
         }
+        mTvMsg.setVisibility(View.GONE);
     }
 
     @Override

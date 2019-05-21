@@ -2,38 +2,70 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#fff">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:id="@+id/avatar"
-            android:background="@drawable/item_bg"/>
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
+            android:id="@+id/id_avatar"
+            android:minHeight="100dp"/>
         <TextView
             android:id="@+id/id_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingBottom="8dp"
-            android:minLines="1"
-            android:maxLines="2"
-            android:text="ProductName"
-            android:textColor="#07111b"
+            android:singleLine="true"
+            tools:text="ProductName"
+            android:textColor="#000"
             android:textSize="16dp"
-            android:layout_below="@+id/avatar"
+            android:layout_below="@+id/id_avatar"
+            android:paddingLeft="8dp"
+            android:paddingTop="5dp"
             />
         <TextView
-            android:id="@+id/id_price"
-            android:layout_width="wrap_content"
+            android:id="@+id/id_sellpoint"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:text="¥0.00"
-            android:textColor="#f01414"
-            android:textSize="16dp"
+            tools:text="Sellpoint"
+            android:textColor="#999"
+            android:textSize="14dp"
             android:layout_below="@+id/id_name"
+            android:paddingLeft="8dp"
             />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/id_sellpoint">
+            <TextView
+                android:id="@+id/id_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                tools:text="¥0.00"
+                android:textColor="#f01414"
+                android:textSize="16dp"
+                android:paddingLeft="10dp"
+                />
+            <TextView
+                android:id="@+id/id_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                tools:text="(已售10件)"
+                android:textColor="#999"
+                android:textSize="14dp"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@+id/id_price"
+                android:gravity="bottom"
+                />
+        </LinearLayout>
+
+
     </RelativeLayout>
 </FrameLayout>

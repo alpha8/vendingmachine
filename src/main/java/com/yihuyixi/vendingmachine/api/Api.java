@@ -3,10 +3,10 @@ package com.yihuyixi.vendingmachine.api;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
-import com.yihuyixi.vendingmachine.exception.AppException;
-import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
+import com.yihuyixi.vendingmachine.exception.AppException;
+import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.vo.Artwork;
 import com.yihuyixi.vendingmachine.vo.PayVO;
 import com.yihuyixi.vendingmachine.vo.PictureInfo;
@@ -27,18 +27,37 @@ public class Api {
     private static final String TAG_API = "api";
     private static final String GOODS_API_URL = AppConstants.BASE_API + "/artwork/list?artworkTypeName=tea&currentPage=1";
     private static final String QRCODE_API_URL = AppConstants.WX_API + "/wx/pay/qrcode";
+    private static final String QUERY_ORDER_API_URL = AppConstants.WX_API + "/wx/orderquery?orderNo=";
+
     private static final String CONTENT_TYPE = "contentType";
     private static final String JSON_TYPE = "application/json;charset=utf-8";
     private static final OkHttpClient client = new OkHttpClient();
+    private static Api instance = new Api();
 
     private Api() {
     }
 
     public static Api getInstance() {
-        return new Api();
+        return instance;
     }
 
-    public void queryPayState() {
+    public boolean checkPayState(String orderNo) throws AppException {
+        String url = QUERY_ORDER_API_URL + orderNo;
+        Log.d(TAG_API, String.format("queryPayState url=%s", url));
+        Request request = new Request.Builder().url(url)
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            ResponseEntity resp = JSON.parseObject(result, ResponseEntity.class);
+            if (resp.getResult() == 0 && AppConstants.PAY_SUCCESS.equalsIgnoreCase(resp.getData().getTrade_state())) {
+                return true;
+            }
+            return false;
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！");
+        }
     }
 
     public PayVO getWxPay(String json) throws AppException {
@@ -53,15 +72,15 @@ public class Api {
             ResponseEntity resp = JSON.parseObject(result, ResponseEntity.class);
             Log.d(TAG_API, "getWxPay response:" + resp.toString());
             if (resp.getResult() != 0) {
-                throw new AppException("获取微信二维码失败，请稍候重试！");
+                throw new AppException("获取微信二维码失败");
             }
             return resp.getData();
         }catch(IOException e) {
-            throw new AppException("网络故障，请稍候再试！");
+            throw new AppException("网络异常，请稍候再试！");
         }
     }
 
-    public List<ProductInfo> getGoods(int pageSize) throws IOException {
+    public List<ProductInfo> getGoods(int pageSize) throws AppException {
         StringBuilder url = new StringBuilder(GOODS_API_URL);
         if (pageSize > 0) {
             url.append("&pageSize=" + pageSize);
@@ -70,15 +89,20 @@ public class Api {
         Request request = new Request.Builder().url(url.toString())
                 .addHeader(CONTENT_TYPE, JSON_TYPE)
                 .build();
-        Response response = client.newCall(request).execute();
-        String result = response.body().string();
-        return handleGoodsResponse(result);
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            return handleGoodsResponse(result);
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！");
+        }
+
     }
 
     private List<ProductInfo> handleGoodsResponse(String result) {
         ResponseVO responseVO = JSON.parseObject(result, ResponseVO.class);
         if (responseVO == null || responseVO.getTotalRecords() == 0) {
-            throw new NoDataException("no goods data.");
+            throw new NoDataException("未查询到数据");
         }
         Log.d(TAG_API, "getGoods fetch size: " + responseVO.getTotalRecords());
         List<ProductInfo> products = new ArrayList<>();

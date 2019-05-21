@@ -1,16 +1,17 @@
-package com.yihuyixi.vendingmachine;
+package com.yihuyixi.vendingmachine.api;
 
 import android.util.SparseArray;
 
 public class Channels {
     private SparseArray<String> channels = new SparseArray<>();
+    private static Channels instance = new Channels();
 
     private Channels() {
         this.initialize();
     }
 
     public static Channels getInstance() {
-        return new Channels();
+        return instance;
     }
 
     public String getRandomChannel() {
