@@ -1,9 +1,7 @@
 package com.yihuyixi.vendingmachine;
 
 import android.content.Intent;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnErrorListener;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,11 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.MediaController;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -57,20 +56,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("Activity", "main is created.");
+        Log.d("MainActivity", "main is created.");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        setSystemUIVisible(false);
+        setSystemUIVisible(false);
         fetchGoodsData();
         this.initVideoView();
-        this.initPopup();
+        this.initOtherViews();
         this.initSdk();
     }
 
     private PopupWindow popup;
-    private void initPopup() {
+    private void initOtherViews() {
         View root = this.getLayoutInflater().inflate(R.layout.popup, null);
-        popup = new PopupWindow(root, 600, 200);
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        popup = new PopupWindow(root, dm.widthPixels, dm.heightPixels);
         final Button cancel = root.findViewById(R.id.btn_cancel);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initVideoView() {
         mVideo = findViewById(R.id.video);
-        VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo);
+//        VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo);
     }
 
     private void initRecyclerView(final List<ProductInfo> goods) {
@@ -159,9 +159,7 @@ public class MainActivity extends AppCompatActivity {
             getWindow().getDecorView().setSystemUiVisibility(uiFlags);
         } else {
             int uiFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             uiFlags |= 0x00001000;

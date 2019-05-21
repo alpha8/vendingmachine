@@ -41,7 +41,7 @@
         android:layout_alignParentBottom="true"
         android:padding="15dp"
         android:gravity="right|center_vertical"
-        android:background="#ccc"
+        android:background="#3C3535"
         >
         <Button
             android:id="@+id/id_deposit"

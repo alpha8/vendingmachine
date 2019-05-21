@@ -1,12 +1,14 @@
 package com.yihuyixi.vendingmachine;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.api.Channels;
 import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
+import com.yihuyixi.vendingmachine.asynctask.PayTimeoutTask;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
@@ -40,7 +43,9 @@ public class GoodsDetailActivity extends AppCompatActivity {
     private String outChannel;
 
     private TextView mTvMsg;
+    private Button mBackButton;
     private OrderPayStateTask mPayStateTask;
+    private PayTimeoutTask mTimeoutTask;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -54,8 +59,17 @@ public class GoodsDetailActivity extends AppCompatActivity {
                     mIvPhone.setVisibility(View.VISIBLE);
                     mTvTips.setVisibility(View.VISIBLE);
 
-                    mPayStateTask = new OrderPayStateTask(GoodsDetailActivity.this, getApplicationContext());
-                    mPayStateTask.execute(payVO.getOut_trade_no(), outChannel);
+                    mTimeoutTask = new PayTimeoutTask(mHandler,"返回(%s秒)");
+                    mTimeoutTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                    mPayStateTask = new OrderPayStateTask(getApplicationContext(), mTvMsg);
+                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, payVO.getOut_trade_no(), outChannel);
+                    break;
+                case AppConstants.FLAG_UPDATE_COUNTDOWN:
+                    mBackButton.setText((String) msg.obj);
+                    break;
+                case AppConstants.FLAG_CLOSE_DETAIL:
+                    GoodsDetailActivity.this.finish();
                     break;
                 case AppConstants.FLAG_ERROR:
                     String errorMsg = (String) msg.obj;
@@ -93,6 +107,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
         mTvMsg = findViewById(R.id.tv_msg);
         mIvPhone = findViewById(R.id.iv_phone);
         mTvTips = findViewById(R.id.tv_tips);
+        mBackButton = findViewById(R.id.btn_back);
     }
 
     private void initRecylcerView(List<String> icons) {
@@ -149,6 +164,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
 
     public void goBack(View view) {
         this.mPayStateTask.cancelJob();
+        this.mTimeoutTask.cancelJob();
         this.finish();
     }
 

@@ -17,9 +17,10 @@ public class VideoUtils {
 
     private VideoUtils() {
         videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/85f5d37d4564972818869478170/v.f20.mp4");
-        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/a5f0301b4564972818866760618/v.f20.mp4");
-        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/85f5db404564972818869478317/v.f20.mp4");
+        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/2dcd67395285890789363058257/v.f20.mp4");
         videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/5b04f9054564972818865824979/v.f20.mp4");
+        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/85f5db404564972818869478317/v.f20.mp4");
+        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/a5f0301b4564972818866760618/v.f20.mp4");
     }
 
     public static VideoUtils getInstance(Context context) {
@@ -46,13 +47,13 @@ public class VideoUtils {
                 return true;
             }
         });
-//        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//            @Override
-//            public void onPrepared(MediaPlayer mp) {
-//                mp.start();
-//                mp.setLooping(true);
-//            }
-//        });
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                mp.setVolume(1f, 1f);   // volume range: 0-1
+            }
+        });
     }
 
     private String getNextVideo() {

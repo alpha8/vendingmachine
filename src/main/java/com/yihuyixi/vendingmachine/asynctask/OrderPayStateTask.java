@@ -1,6 +1,5 @@
 package com.yihuyixi.vendingmachine.asynctask;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -8,9 +7,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yihuyixi.vendingmachine.GoodsDetailActivity;
-import com.yihuyixi.vendingmachine.R;
 import com.yihuyixi.vendingmachine.api.Api;
+import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.sdk.SdkUtils;
 
@@ -18,22 +16,21 @@ import java.util.Arrays;
 
 public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateTask.JobResult> {
     private static final String TAG = "OrderPayStateTask";
-    private static int SECONDS = 120;
-    private GoodsDetailActivity mGoodsDetailActivity;
+    private int SECONDS = AppConstants.PAY_TIMEOUT_SECONDS;
     private Context mContext;
     private boolean isStop = false;
     private TextView mTvMsg;
     private int mChannelId;
 
-    public OrderPayStateTask(Activity activity, Context context) {
-        this.mGoodsDetailActivity = (GoodsDetailActivity) activity;
+    public OrderPayStateTask(Context context, TextView tvMsg) {
         this.mContext = context;
-        this.mTvMsg = mGoodsDetailActivity.findViewById(R.id.tv_msg);
+        this.mTvMsg = tvMsg;
     }
 
     @Override
     protected void onPreExecute() {
-        SECONDS = 120;
+        SECONDS = AppConstants.PAY_TIMEOUT_SECONDS;
+        isStop = false;
         mTvMsg.setVisibility(View.GONE);
     }
 
@@ -51,10 +48,10 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
                     }
                     Thread.sleep(1000);
                 } catch (AppException | InterruptedException e) {
-                    Log.d(TAG, "OrderPayStateTask failed, caused by " + e.getMessage());
+                    Log.d(TAG, "doInBackground failed, caused by " + e.getMessage());
                 }
             }
-            return new JobResult(false, isStop ? "支付取消！" : "支付超时，请稍候再试！");
+            return new JobResult(false, "支付超时，请稍候再试！");
         }
         return null;
     }
@@ -65,6 +62,9 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
 
     @Override
     protected void onPostExecute(OrderPayStateTask.JobResult jobResult) {
+        if (isStop) {
+            return;
+        }
         if (jobResult.isSuccess) {
             mTvMsg.setText(jobResult.getMessage());
             mTvMsg.setVisibility(View.VISIBLE);

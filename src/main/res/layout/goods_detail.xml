@@ -24,7 +24,7 @@
             android:textColor="#000"
             android:textSize="32dp"
             android:paddingLeft="8dp"
-            android:paddingTop="5dp"
+            android:paddingTop="10dp"
             />
         <TextView
             android:id="@+id/tv_sellpoint"
