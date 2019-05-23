@@ -41,7 +41,7 @@
         android:layout_alignParentBottom="true"
         android:padding="15dp"
         android:gravity="right|center_vertical"
-        android:background="#3C3535"
+        android:background="#F3F1F1"
         >
         <Button
             android:id="@+id/id_deposit"
@@ -49,6 +49,9 @@
             android:layout_height="wrap_content"
             android:background="@drawable/button_circle"
             android:layout_marginRight="10dp"
+            android:width="100dp"
+            android:height="20dp"
+            android:textColor="@color/colorLightDark"
             android:text="取货码" />
 
         <Button
@@ -58,6 +61,9 @@
             android:background="@drawable/button_circle"
             android:layout_toRightOf="@id/id_deposit"
             android:text="帮助"
+            android:textColor="@color/colorLightDark"
+            android:width="100dp"
+            android:height="20dp"
             android:onClick="doHelp"
             />
     </RelativeLayout>

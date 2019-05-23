@@ -64,4 +64,15 @@ public class Artwork {
     public void setStock(Stock stock) {
         this.stock = stock;
     }
+
+    @Override
+    public String toString() {
+        return "Artwork{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", sellPoint='" + sellPoint + '\'' +
+                ", stock=" + stock +
+                '}';
+    }
 }

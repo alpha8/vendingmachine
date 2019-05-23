@@ -1,44 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:layout_gravity="center"
-    android:gravity="center"
-    >
+    android:gravity="center">
 
-    <RelativeLayout
+    <TextView
         android:layout_width="600dp"
-        android:layout_height="200dp"
-        android:orientation="vertical"
-        android:layout_gravity="center"
-        android:background="#00bb9c">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/tel"
-            android:id="@+id/tv_tel"
-            android:textColor="#FAF3F3"
-            android:textSize="26dp"
-            android:paddingBottom="60dp"
-            />
+        android:layout_height="250dp"
+        android:gravity="center"
+        android:text="@string/tel"
+        android:id="@+id/tv_tel"
+        android:textSize="26dp"
+        />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_alignParentBottom="true"
-            android:gravity="center"
-            android:layout_marginBottom="20dp">
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="关闭"
-                android:background="@drawable/button_circle"
-                android:id="@+id/btn_cancel"
-                />
-        </RelativeLayout>
-    </RelativeLayout>
-
-
-</LinearLayout>
+</RelativeLayout>

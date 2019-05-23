@@ -2,10 +2,10 @@ package com.yihuyixi.vendingmachine;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
+import com.yihuyixi.vendingmachine.activity.BaseActivity;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.api.Channels;
 import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
@@ -22,14 +23,17 @@ import com.yihuyixi.vendingmachine.asynctask.PayTimeoutTask;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
+import com.yihuyixi.vendingmachine.sdk.SdkUtils;
+import com.yihuyixi.vendingmachine.utils.Utils;
 import com.yihuyixi.vendingmachine.vo.PayVO;
 import com.yihuyixi.vendingmachine.vo.QrcodeVO;
+import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.youth.banner.Banner;
 import com.youth.banner.loader.ImageLoader;
 
 import java.util.List;
 
-public class GoodsDetailActivity extends AppCompatActivity {
+public class GoodsDetailActivity extends BaseActivity {
     private Banner mBanner;
     private TextView mProductName;
     private ImageView mQrcode;
@@ -39,7 +43,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
     private TextView mPrice;
     private TextView mSalesCount;
     private ProductInfo mProductInfo;
-    private PayVO mPayVO;
+    private ResponseEntity mResponseEntity;
     private String outChannel;
 
     private TextView mTvMsg;
@@ -51,19 +55,30 @@ public class GoodsDetailActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch(msg.what) {
                 case AppConstants.FLAG_QRCODE_URL:
-                    PayVO payVO = (PayVO) msg.obj;
-                    mPayVO = payVO;
-                    String qrcodeUrl = String.format("%s/getQrcode?url=%s", AppConstants.WX_API, payVO.getCode_url());
+                    mResponseEntity = (ResponseEntity) msg.obj;
+                    String qrcodeUrl = String.format("%s/getQrcode?url=%s", AppConstants.WX_API, mResponseEntity.getUrl());
                     Glide.with(GoodsDetailActivity.this).load(qrcodeUrl).into(mQrcode);
                     mQrcode.setVisibility(View.VISIBLE);
                     mIvPhone.setVisibility(View.VISIBLE);
                     mTvTips.setVisibility(View.VISIBLE);
 
-                    mTimeoutTask = new PayTimeoutTask(mHandler,"返回(%s秒)");
+                    mTimeoutTask = new PayTimeoutTask(mHandler,"返回（%s秒）");
                     mTimeoutTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-                    mPayStateTask = new OrderPayStateTask(getApplicationContext(), mTvMsg);
-                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, payVO.getOut_trade_no(), outChannel);
+                    mPayStateTask = new OrderPayStateTask(mHandler);
+                    String preOrderId = mResponseEntity.getData() != null ? mResponseEntity.getData().getId() : "";
+                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, preOrderId, outChannel);
+                    break;
+                case AppConstants.FLAG_PAY_SUCCESS:
+                    mQrcode.setVisibility(View.GONE);
+                    mIvPhone.setVisibility(View.GONE);
+                    mTvTips.setVisibility(View.GONE);
+                    mTvMsg.setVisibility(View.VISIBLE);
+                    mTvMsg.setText((String)msg.obj);
+                    SdkUtils.getInstance().checkout(Integer.parseInt(outChannel.substring(1)));
+                    break;
+                case AppConstants.FLAG_PAY_FAIL:
+                    Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
                     break;
                 case AppConstants.FLAG_UPDATE_COUNTDOWN:
                     mBackButton.setText((String) msg.obj);
@@ -72,8 +87,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
                     GoodsDetailActivity.this.finish();
                     break;
                 case AppConstants.FLAG_ERROR:
-                    String errorMsg = (String) msg.obj;
-                    Toast.makeText(GoodsDetailActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    Toast.makeText(GoodsDetailActivity.this, (String) msg.obj, Toast.LENGTH_LONG).show();
                     break;
             }
         }
@@ -84,7 +98,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.goods_detail);
         ProductInfo productInfo = (ProductInfo) getIntent().getSerializableExtra(AppConstants.INTENT_GOODS);
-        Log.d("GoodsDetailActivity", productInfo.toString());
+        Log.d(AppConstants.TAG_YIHU, productInfo.toString());
         mProductInfo = productInfo;
         initRecylcerView(productInfo.getIcons());
         initView(productInfo);
@@ -98,7 +112,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
         mSellpoint.setText(productInfo.getSellpoint());
 
         mPrice = findViewById(R.id.tv_price);
-        mPrice.setText(String.format("¥%s", productInfo.getPrice()));
+        mPrice.setText(String.format("¥%s", productInfo.getFormatPrice()));
 
         mSalesCount = findViewById(R.id.tv_count);
         mSalesCount.setText(String.format("(已售:%s件)", productInfo.getSellCount()));
@@ -126,6 +140,7 @@ public class GoodsDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Utils.hideBottomUIMenu(getWindow());
         getQrcode();
     }
 
@@ -134,26 +149,23 @@ public class GoodsDetailActivity extends AppCompatActivity {
             @Override
             public void run() {
                 QrcodeVO qrcode = new QrcodeVO();
+                qrcode.setName(mProductInfo.getName());
+                qrcode.setIcon(mProductInfo.getPictureId());
                 qrcode.setProductId(mProductInfo.getId());
-//                qrcode.setTotalFee(mProductInfo.getPrice());
-                qrcode.setTotalFee(0.01f);
-                qrcode.setDeviceInfo("名进投资大厦店");
-                qrcode.setBody(mProductInfo.getName());
-                qrcode.setDetail(mProductInfo.getName());
-                qrcode.setAttach("茶美自动售卖机");
+                qrcode.setPrice(mProductInfo.getPrice());
+                qrcode.setVendingId("茶美自动售卖机(景田店)");
                 outChannel = Channels.getInstance().getRandomChannel();
                 qrcode.setChannelId(outChannel.substring(1));
-                qrcode.setIcon(mProductInfo.getAvatar());
 
                 Message message = mHandler.obtainMessage();
                 try {
                     String json = JSON.toJSONString(qrcode);
-                    PayVO payVO = Api.getInstance().getWxPay(json);
+                    ResponseEntity responseEntity = Api.getInstance().getWxPay(json);
                     message.what = AppConstants.FLAG_QRCODE_URL;
-                    message.obj = payVO;
+                    message.obj = responseEntity;
                     mHandler.sendMessage(message);
                 } catch (AppException e) {
-                    Log.e("GoodsDetailActivity", e.getMessage());
+                    Log.e(AppConstants.TAG_YIHU, e.getMessage());
                     message.what = AppConstants.FLAG_ERROR;
                     message.obj = e.getMessage();
                     mHandler.sendMessage(message);
@@ -175,6 +187,8 @@ public class GoodsDetailActivity extends AppCompatActivity {
             mBanner.stopAutoPlay();
         }
         mTvMsg.setVisibility(View.GONE);
+        this.mPayStateTask.cancelJob();
+        this.mTimeoutTask.cancelJob();
     }
 
     @Override

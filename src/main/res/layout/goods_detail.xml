@@ -23,7 +23,7 @@
             tools:text="ProductName"
             android:textColor="#000"
             android:textSize="32dp"
-            android:paddingLeft="8dp"
+            android:paddingLeft="12dp"
             android:paddingTop="10dp"
             />
         <TextView
@@ -35,7 +35,7 @@
             android:textColor="#999"
             android:textSize="28dp"
             android:layout_below="@+id/tv_name"
-            android:paddingLeft="8dp"
+            android:paddingLeft="12dp"
             />
     </RelativeLayout>
     <LinearLayout
@@ -50,7 +50,7 @@
             tools:text="¥0.00"
             android:textColor="#f01414"
             android:textSize="32dp"
-            android:paddingLeft="10dp"
+            android:paddingLeft="12dp"
             />
         <TextView
             android:id="@+id/tv_count"
@@ -104,7 +104,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/tv_msg"
         tools:text="支付成功"
-        android:layout_marginTop="20dp"
+        android:textSize="24dp"
+        android:layout_marginTop="180dp"
         android:layout_gravity="center_horizontal"
         android:visibility="gone"
         />
@@ -117,6 +118,10 @@
         android:layout_gravity="center_horizontal"
         android:onClick="goBack"
         android:layout_marginTop="180dp"
+        android:textColor="@color/colorLightDark"
+        android:textSize="26dp"
+        android:width="300dp"
+        android:height="65dp"
         android:text="返回" />
 
 </LinearLayout>

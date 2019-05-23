@@ -16,7 +16,6 @@ import com.yihuyixi.vendingmachine.constants.AppConstants;
 import java.util.List;
 
 public class SdkUtils {
-    private static final String TAG_SDK = "SDK";
     private static SdkUtils instance = new SdkUtils();
     private SdkUtils() {
     }
@@ -30,24 +29,24 @@ public class SdkUtils {
         WMSerialportManager.openSerialPort("ttyS3", new WMSerialportCallBack() {
             @Override
             public void onSucceed(WMSSendType type, Object o) {
-                Log.i(TAG_SDK, String.format("openSerialPort onSucceed type=%s, o=%s", type, o));
+                Log.i(AppConstants.TAG_YIHU, String.format("openSerialPort onSucceed type=%s, o=%s", type, o));
             }
 
             @Override
             public void onFailed(WMSSendType type, int i) {
-                Log.e(TAG_SDK, String.format("openSerialPort onFailed type=%s, i=%d", type, i));
+                Log.e(AppConstants.TAG_YIHU, String.format("openSerialPort onFailed type=%s, i=%d", type, i));
             }
         });
         WMSerialportManager.addOnDataSentListener(new OnDataSentListener() {
             @Override
             public void onDataSent(String s) {
-                Log.i(TAG_SDK, "addOnDataSentListener onDataSent:" + s);
+                Log.i(AppConstants.TAG_YIHU, "addOnDataSentListener onDataSent:" + s);
             }
         });
         WMSerialportManager.addWMDeviceToAppCallBack(new WMDeviceToAppCallBack() {
             @Override
             public void onSuccess(WMSSendType type, String s) {
-                Log.i(TAG_SDK, String.format("addWMDeviceToAppCallBack onSuccess: type=%s, 回调指令为=%s", type, s));
+                Log.i(AppConstants.TAG_YIHU, String.format("addWMDeviceToAppCallBack onSuccess: type=%s, 回调指令为=%s", type, s));
                 Message message = handler.obtainMessage();
                 message.what = AppConstants.FLAG_SDK_SUCCESS;
                 SdkResponse response = new SdkResponse(type, s);
@@ -57,7 +56,7 @@ public class SdkUtils {
 
             @Override
             public void onFaild(WMSSendType type, int errorType, List<String> errorDataList, String s) {
-                Log.e(TAG_SDK, String.format("addWMDeviceToAppCallBack onFailed: type=%s, errorType=%d, errorDataList=%s, errData=%s", type, errorType, errorDataList, s));
+                Log.e(AppConstants.TAG_YIHU, String.format("addWMDeviceToAppCallBack onFailed: type=%s, errorType=%d, errorDataList=%s, errData=%s", type, errorType, errorDataList, s));
                 Message message = handler.obtainMessage();
                 message.what = AppConstants.FLAG_SDK_FAIL;
                 SdkResponse response = new SdkResponse(type, s);
@@ -73,7 +72,7 @@ public class SdkUtils {
 
     public void checkout(int channelId){
         long orderId = OrderIdGenerator.getNewOrderId();
-        Log.i(TAG_SDK, String.format("准备出货中, 货架号：%d, 订单号：%s", channelId, orderId));
+        Log.i(AppConstants.TAG_YIHU, String.format("准备出货中, 货架号：%d, 订单号：%s", channelId, orderId));
         WMSerialportManager.setShipments(0, channelId, orderId, 15 * 1000);
     }
 

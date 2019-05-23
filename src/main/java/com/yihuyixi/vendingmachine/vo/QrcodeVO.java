@@ -1,45 +1,23 @@
 package com.yihuyixi.vendingmachine.vo;
 
 public class QrcodeVO {
-    private String deviceInfo;
-    private float totalFee;
-    private String productId;
-    private String body;
-    private String detail;
-    private String attach;
-    private String outTradeNo;
-    private String icon;
+    private String vendingId;
     private String channelId;
+    private String productId;
+    private String name;
+    private String icon;
+    private float price;
 
     @Override
     public String toString() {
         return "QrcodeVO{" +
-                "deviceInfo='" + deviceInfo + '\'' +
-                "totalFee='" + totalFee + '\'' +
-                ", productId='" + productId + '\'' +
-                ", body='" + body + '\'' +
-                ", detail='" + detail + '\'' +
-                ", attach='" + attach + '\'' +
-                ", outTradeNo='" + outTradeNo + '\'' +
-                ", icon='" + icon + '\'' +
+                "vendingId='" + vendingId + '\'' +
                 ", channelId='" + channelId + '\'' +
+                ", productId='" + productId + '\'' +
+                ", name='" + name + '\'' +
+                ", icon='" + icon + '\'' +
+                ", price=" + price +
                 '}';
-    }
-
-    public String getDeviceInfo() {
-        return deviceInfo;
-    }
-
-    public void setDeviceInfo(String deviceInfo) {
-        this.deviceInfo = deviceInfo;
-    }
-
-    public float getTotalFee() {
-        return totalFee;
-    }
-
-    public void setTotalFee(float totalFee) {
-        this.totalFee = totalFee;
     }
 
     public String getProductId() {
@@ -50,36 +28,28 @@ public class QrcodeVO {
         this.productId = productId;
     }
 
-    public String getBody() {
-        return body;
+    public String getVendingId() {
+        return vendingId;
     }
 
-    public void setBody(String body) {
-        this.body = body;
+    public void setVendingId(String vendingId) {
+        this.vendingId = vendingId;
     }
 
-    public String getDetail() {
-        return detail;
+    public String getChannelId() {
+        return channelId;
     }
 
-    public void setDetail(String detail) {
-        this.detail = detail;
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
-    public String getAttach() {
-        return attach;
+    public String getName() {
+        return name;
     }
 
-    public void setAttach(String attach) {
-        this.attach = attach;
-    }
-
-    public String getOutTradeNo() {
-        return outTradeNo;
-    }
-
-    public void setOutTradeNo(String outTradeNo) {
-        this.outTradeNo = outTradeNo;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getIcon() {
@@ -90,11 +60,11 @@ public class QrcodeVO {
         this.icon = icon;
     }
 
-    public String getChannelId() {
-        return channelId;
+    public float getPrice() {
+        return price;
     }
 
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
+    public void setPrice(float price) {
+        this.price = price;
     }
 }

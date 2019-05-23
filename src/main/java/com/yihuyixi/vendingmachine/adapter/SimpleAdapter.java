@@ -13,7 +13,9 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.yihuyixi.vendingmachine.R;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
+import com.yihuyixi.vendingmachine.constants.AppConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHolder> {
@@ -31,24 +33,30 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
 
     public SimpleAdapter(Context context, List<ProductInfo> datas) {
         this.context = context;
-        this.mDatas = datas;
+        if (datas != null) {
+            this.mDatas = datas;
+        } else {
+            this.mDatas = new ArrayList<>();
+        }
         this.mInflater = LayoutInflater.from(context);
     }
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int position) {
+        Log.d(AppConstants.TAG_YIHU, "onCreateViewHolder");
         View view = mInflater.inflate(R.layout.item_productview, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final @NonNull MyViewHolder holder, int position) {
+        Log.d(AppConstants.TAG_YIHU, "onBindViewHolder");
+        Log.d(AppConstants.TAG_YIHU, mDatas.toString());
         ProductInfo product = mDatas.get(position);
-        Log.d("Adapter", "product=" + product);
         holder.name.setText(product.getName());
         holder.sellPoint.setText(product.getSellpoint());
-        holder.price.setText(String.format("¥%s", product.getPrice()));
+        holder.price.setText(String.format("¥%s", product.getFormatPrice()));
         holder.sellCount.setText(String.format("(已售%d件)", product.getSellCount()));
         Glide.with(context).load(product.getAvatar()).into(holder.avatar);
         setItemEvent(holder);
@@ -69,6 +77,12 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
     @Override
     public int getItemCount() {
         return mDatas.size();
+    }
+
+    public void setDatas(List<ProductInfo> datas) {
+        mDatas.clear();
+        mDatas.addAll(datas);
+        this.notifyDataSetChanged();
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {

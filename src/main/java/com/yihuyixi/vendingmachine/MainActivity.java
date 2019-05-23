@@ -1,24 +1,18 @@
 package com.yihuyixi.vendingmachine;
 
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.yihuyixi.vendingmachine.activity.BaseActivity;
 import com.yihuyixi.vendingmachine.adapter.SimpleAdapter;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
@@ -27,22 +21,35 @@ import com.yihuyixi.vendingmachine.divider.DividerItemDecoration;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.sdk.SdkUtils;
+import com.yihuyixi.vendingmachine.utils.NetUtils;
+import com.yihuyixi.vendingmachine.utils.Utils;
 import com.yihuyixi.vendingmachine.utils.VideoUtils;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity {
+import static com.yihuyixi.vendingmachine.constants.AppConstants.TAG_YIHU;
+
+public class MainActivity extends BaseActivity {
     private VideoView mVideo;
     private RecyclerView mRecyclerView;
     private SimpleAdapter mAdapter;
+    private List<ProductInfo> mProductInfos;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            Log.d("MainActivity", msg.toString());
+            Log.d(TAG_YIHU, msg.toString());
             switch(msg.what) {
                 case AppConstants.FLAG_GOODS:
-                    List<ProductInfo> products = (List<ProductInfo>) msg.obj;
-                    initRecyclerView(products);
+                    initRecyclerView();
+                    break;
+                case AppConstants.FLAG_RELOAD_GOODS:
+                    if (mRecyclerView != null) {
+                        mAdapter.setDatas(mProductInfos);
+                    } else {
+                        initRecyclerView();
+                    }
                     break;
                 case AppConstants.FLAG_NO_DATA:
                     Toast.makeText(MainActivity.this, "网络故障，数据加载失败！", Toast.LENGTH_LONG).show();
@@ -56,30 +63,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("MainActivity", "main is created.");
+        Log.d(TAG_YIHU, "main is created.");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setSystemUIVisible(false);
         fetchGoodsData();
         this.initVideoView();
-        this.initOtherViews();
+//        this.initOtherViews();
         this.initSdk();
     }
-
-    private PopupWindow popup;
-    private void initOtherViews() {
-        View root = this.getLayoutInflater().inflate(R.layout.popup, null);
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        popup = new PopupWindow(root, dm.widthPixels, dm.heightPixels);
-        final Button cancel = root.findViewById(R.id.btn_cancel);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                popup.dismiss();
-            }
-        });
-    }
-
     private void initSdk() {
         SdkUtils.getInstance().initialize(getApplicationContext(), mHandler);
     }
@@ -92,12 +83,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void initVideoView() {
         mVideo = findViewById(R.id.video);
-//        VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo);
+        VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo);
     }
 
-    private void initRecyclerView(final List<ProductInfo> goods) {
+    private void initRecyclerView() {
         mRecyclerView = findViewById(R.id.recyclerview);
-        mAdapter = new SimpleAdapter(getApplicationContext(), goods);
+        mAdapter = new SimpleAdapter(getApplicationContext(), mProductInfos);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -105,8 +96,9 @@ public class MainActivity extends AppCompatActivity {
         mAdapter.setOnItemClickListener(new SimpleAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
+                Log.d(TAG_YIHU, "onItemClick position=" + position + ", size=" + mProductInfos.size());
                 Intent intent = new Intent(MainActivity.this, GoodsDetailActivity.class);
-                intent.putExtra(AppConstants.INTENT_GOODS, goods.get(position));
+                intent.putExtra(AppConstants.INTENT_GOODS, mProductInfos.get(position));
                 startActivity(intent);
             }
         });
@@ -118,12 +110,11 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 Message message = mHandler.obtainMessage();
                 try {
-                    List<ProductInfo> products = Api.getInstance().getGoods(50);
+                    mProductInfos = Api.getInstance().getGoods(60);
                     message.what = AppConstants.FLAG_GOODS;
-                    message.obj = products;
                     mHandler.sendMessage(message);
                 } catch (NoDataException | AppException e) {
-                    Log.e("MainActivity", "fetchGoodsData encounted exception, message=" + e.getMessage());
+                    Log.e(TAG_YIHU, "fetchGoodsData encounted exception, message=" + e.getMessage());
                     message.what = AppConstants.FLAG_NO_DATA;
                     mHandler.sendMessage(message);
                 }
@@ -134,13 +125,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("MainActivity", "onStart");
+        Log.d(TAG_YIHU, "onStart");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("MainActivity", "onStop");
+        Log.d(TAG_YIHU, "onStop");
         mVideo.pause();
         mVideo.stopPlayback();
     }
@@ -148,27 +139,42 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("MainActivity", "onResume");
+        Log.d(TAG_YIHU, "onResume");
+        Utils.hideBottomUIMenu(getWindow());
         VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo);
     }
 
-    private void setSystemUIVisible(boolean show) {
-        if (show) {
-            int uiFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            uiFlags |= 0x00001000;
-            getWindow().getDecorView().setSystemUiVisibility(uiFlags);
-        } else {
-            int uiFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            uiFlags |= 0x00001000;
-            getWindow().getDecorView().setSystemUiVisibility(uiFlags);
+    @Override
+    public void notifyNetChanged(NetUtils.NetworkType type) {
+        super.notifyNetChanged(type);
+        if (type == NetUtils.NetworkType.none) {
+            if (mProductInfos == null || mProductInfos.isEmpty()) {
+                try {
+                    mProductInfos = Api.getInstance().getGoods(60);
+                    if (mProductInfos != null && !mProductInfos.isEmpty()) {
+                        Message message = mHandler.obtainMessage();
+                        message.what = AppConstants.FLAG_RELOAD_GOODS;
+                        mHandler.sendMessage(message);
+                    }
+                } catch (AppException e) {
+                    e.printStackTrace();
+                    Log.e(TAG_YIHU, "reload goods data encounted exception, message=" + e.getMessage());
+                }
+            }
         }
     }
 
     public void doHelp(View view) {
-        Log.d("MainActivity", "doHelp");
-        popup.showAtLocation(view, Gravity.CENTER,20, 20);
+        Log.d(TAG_YIHU, "doHelp");
+//        new AlertDialog.Builder(this)
+//                .setTitle("客服中心")
+//                .setView(getLayoutInflater().inflate(R.layout.popup, null))
+//                .setPositiveButton("知道了", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                })
+//                .create().show();
     }
 }

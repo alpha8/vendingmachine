@@ -6,14 +6,24 @@ public class ResponseEntity implements Serializable {
     private PayVO data;
     private String message;
     private int result;
+    private String url;
 
     @Override
     public String toString() {
         return "ResponseEntity{" +
                 "data=" + data +
+                "url=" + url +
                 ", message='" + message + '\'' +
                 ", result=" + result +
                 '}';
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public PayVO getData() {

@@ -9,7 +9,7 @@ import com.yihuyixi.vendingmachine.constants.AppConstants;
 
 public class PayTimeoutTask extends AsyncTask<Void, Void, Void> {
     private int SECONDS = AppConstants.PAY_TIMEOUT_SECONDS;
-    private boolean isStop = false;
+    private volatile boolean isStop = false;
     private Handler mHandler;
     private String mPattern;
 
@@ -20,17 +20,16 @@ public class PayTimeoutTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... voids) {
-        Log.d("PayTimeoutTask", "doInBackground, isStop=" + isStop);
+        Log.d(AppConstants.TAG_YIHU, "doInBackground, isStop=" + isStop);
         while(!isStop && --SECONDS >= 0){
             try {
-                Log.d("PayTimeoutTask", "SECONDS=" + SECONDS);
                 Message message = mHandler.obtainMessage();
                 message.what = AppConstants.FLAG_UPDATE_COUNTDOWN;
                 message.obj = String.format(mPattern, SECONDS);
                 mHandler.sendMessage(message);
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                Log.d("PayTimeoutTask", "doInBackground failed, caused by " + e.getMessage());
+                Log.d(AppConstants.TAG_YIHU, "doInBackground failed, caused by " + e.getMessage());
             }
         }
         return null;

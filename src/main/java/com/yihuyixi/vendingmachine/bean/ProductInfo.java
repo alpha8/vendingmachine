@@ -1,6 +1,7 @@
 package com.yihuyixi.vendingmachine.bean;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class ProductInfo implements Serializable {
@@ -11,6 +12,15 @@ public class ProductInfo implements Serializable {
     private String sellpoint;
     private int sellCount;
     private List<String> icons;
+    private String pictureId;
+
+    public String getPictureId() {
+        return pictureId;
+    }
+
+    public void setPictureId(String pictureId) {
+        this.pictureId = pictureId;
+    }
 
     public String getId() {
         return id;
@@ -52,6 +62,11 @@ public class ProductInfo implements Serializable {
         this.price = price;
     }
 
+    public String getFormatPrice() {
+        DecimalFormat df = new DecimalFormat("####.##");
+        return df.format(this.getPrice());
+    }
+
     public String getSellpoint() {
         return sellpoint;
     }
@@ -73,6 +88,7 @@ public class ProductInfo implements Serializable {
         return "ProductInfo{" +
                 "name='" + name + '\'' +
                 ", avatar='" + avatar + '\'' +
+                ", pictureId='" + pictureId + '\'' +
                 ", price=" + price +
                 ", sellpoint='" + sellpoint + '\'' +
                 ", sellCount='" + sellCount + '\'' +
