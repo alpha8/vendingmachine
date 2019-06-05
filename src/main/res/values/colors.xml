@@ -9,4 +9,7 @@
     <color name="colorItemNormal">#44FF0000</color>
     <color name="colorLightDark">#858484</color>
     <color name="colorLighter">#A8A8A8</color>
+    <color name="colorMolv">#00bb9c</color>
+    <color name="colorWhite">#f2f2f2</color>
+    <color name="colorBlack">#000000</color>
 </resources>

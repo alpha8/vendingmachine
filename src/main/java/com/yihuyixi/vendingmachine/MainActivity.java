@@ -1,8 +1,5 @@
 package com.yihuyixi.vendingmachine;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,27 +7,25 @@ import android.os.Message;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.GridView;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.bumptech.glide.Glide;
 import com.yihuyixi.vendingmachine.adapter.GridItem;
 import com.yihuyixi.vendingmachine.adapter.GridViewAdapter;
 import com.yihuyixi.vendingmachine.adapter.SimpleAdapter;
 import com.yihuyixi.vendingmachine.api.Api;
+import com.yihuyixi.vendingmachine.asynctask.NotakenCheckTask;
 import com.yihuyixi.vendingmachine.bean.GoodsType;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.divider.DividerItemDecoration;
-import com.yihuyixi.vendingmachine.divider.Dp2Px;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.message.EventMessage;
@@ -38,6 +33,7 @@ import com.yihuyixi.vendingmachine.sdk.SdkUtils;
 import com.yihuyixi.vendingmachine.utils.NetUtils;
 import com.yihuyixi.vendingmachine.utils.VideoUtils;
 import com.yihuyixi.vendingmachine.view.DiyDialog;
+import com.yihuyixi.vendingmachine.vo.VendorResponse;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -45,6 +41,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -124,6 +121,7 @@ public class MainActivity extends BaseActivity {
         if (mUnbinder != null) {
             mUnbinder.unbind();
         }
+        EventBus.getDefault().removeAllStickyEvents();
         EventBus.getDefault().unregister(this);
         SdkUtils.getInstance().release();
     }
@@ -180,6 +178,9 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG_YIHU, "onStop");
         mVideo.pause();
         mVideo.stopPlayback();
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
     @Override
@@ -199,10 +200,10 @@ public class MainActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void reloadProducts(EventMessage event) {
-        Log.d(TAG_YIHU, "reloadProducts event=" + event.toString());
         if (event.getType() != AppConstants.FLAG_RELOAD_GOODS) {
             return;
         }
+        Log.d(TAG_YIHU, "reloadProducts event=" + event.toString());
         try {
             if (mProductInfos.isEmpty()) {
                 Message message = mHandler.obtainMessage();
@@ -215,15 +216,62 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    private DiyDialog dialog;
+    private NotakenCheckTask mNotakenCheckTask;
     @OnClick(R.id.id_deposit)
     public void doDeposit() {
-        Log.d(TAG_YIHU, "doDeposit");
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_exchange_code, null);
+        dialog = new DiyDialog(this, dialogView);
+        dialog.setDialogWidth(50);
+        dialog.setDialogHeight(40);
+        dialog.show();
+
+        String vendorId = AppConstants.VENDOR_ID;
+        String requestId = UUID.randomUUID().toString();
+        String qrcodeUrl = Api.getInstance().getTakenQrcode(vendorId, requestId);
+        ImageView qrcode = dialogView.findViewById(R.id.iv_exchange_qrcode);
+        Glide.with(this).load(qrcodeUrl).into(qrcode);
+
+        TextView confirm = dialogView.findViewById(R.id.id_code_back);
+        confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                if (mNotakenCheckTask != null) {
+                    mNotakenCheckTask.cancelJob();
+                }
+            }
+        });
+        mNotakenCheckTask = new NotakenCheckTask();
+        mNotakenCheckTask.execute(vendorId, requestId);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void scanTimeout(EventMessage event) {
+        if (event.getType() == AppConstants.FLAG_TAKEN_FAIL) {
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void loginSuccess(EventMessage event) {
+        if (event.getType() == AppConstants.FLAG_TAKEN_SUCCESS) {
+            VendorResponse.VendorUser user = (VendorResponse.VendorUser) event.getData();
+            Intent intent = new Intent(MainActivity.this, TakenGoodsActivity.class);
+            intent.putExtra(AppConstants.INTENT_TAKEN_DEVICE, user);
+            startActivity(intent);
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        }
     }
 
     @OnClick(R.id.id_help)
     public void doHelp(View view) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog, null);
-        final DiyDialog dialog = new DiyDialog(this, dialogView);
+        dialog = new DiyDialog(this, dialogView);
         dialog.setDialogWidth(50);
         dialog.setDialogHeight(28);
         dialog.show();
@@ -235,6 +283,5 @@ public class MainActivity extends BaseActivity {
                 dialog.dismiss();
             }
         });
-        dialog.show();
     }
 }

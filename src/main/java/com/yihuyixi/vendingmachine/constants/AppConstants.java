@@ -24,9 +24,14 @@ public final class AppConstants {
     public static final int FLAG_DETAIL_QRCODE_URL = 200;
     public static final int FLAG_DETAIL_BANNER = 201;
 
+    public static final int FLAG_TAKEN_SUCCESS = 300;
+    public static final int FLAG_TAKEN_FAIL = 301;
+    public static final int FLAG_TAKEN_ORDERS = 400;
+
     public static final String INTENT_GOODS = "goodsinfo";
     public static final String INTENT_SECTION = "section";
     public static final String INTENT_PROMOTE_GOODS = "promote_goods";
+    public static final String INTENT_TAKEN_DEVICE = "deviceInfo";
 
     public static final String PAY_SUCCESS = "SUCCESS";
 
@@ -37,5 +42,5 @@ public final class AppConstants {
     public static final long SPLASH_DELAY_TIME = 1000L;
     public static final int PAGE_SIZE = 80;
 
-    public static final String VENDOR_ID = "AVM001";
+    public static final String VENDOR_ID = "VM001";
 }

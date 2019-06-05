@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.yihuyixi.vendingmachine.bean.GoodsType;
+import com.yihuyixi.vendingmachine.bean.OrderInfo;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
@@ -12,13 +13,14 @@ import com.yihuyixi.vendingmachine.utils.GZIPUtils;
 import com.yihuyixi.vendingmachine.vo.Artwork;
 import com.yihuyixi.vendingmachine.vo.ExtGoods;
 import com.yihuyixi.vendingmachine.vo.ExtGoodsResponse;
+import com.yihuyixi.vendingmachine.vo.OrderResponse;
 import com.yihuyixi.vendingmachine.vo.PictureInfo;
 import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.yihuyixi.vendingmachine.vo.ResponseVO;
+import com.yihuyixi.vendingmachine.vo.VendorResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -33,6 +35,7 @@ public class Api {
     private static final String QUERY_ORDER_API_URL = AppConstants.WX_API + "/wx/orderquery?preId=";
     private static final String QUERY_SPECIAL_GOODS_API_URL = AppConstants.SPECIAL_GOODS_API + "/specialfield/list";
     private static final String QUERY_GOODS_API_URL = AppConstants.BASE_API + "/yihu/artwork/";
+    private static final String QUERY_ORDERS_API_URL = AppConstants.CMS_API + "/order/list";
 
     private static final String CONTENT_TYPE = "contentType";
     private static final String JSON_TYPE = "application/json; charset=utf-8";
@@ -45,6 +48,65 @@ public class Api {
 
     public static Api getInstance() {
         return instance;
+    }
+
+    public String getTakenQrcode(String vendorId, String requestId) {
+        String url = String.format("%s/qrcode/artwork?vendorId=%s&requestId=%s", AppConstants.CMS_API, vendorId, requestId);
+        Log.d(AppConstants.TAG_YIHU, "取货二维码： " + url);
+        return url;
+    }
+
+    public List<OrderInfo> getOrderList(String vendorId, int userId) throws AppException {
+        StringBuilder url = new StringBuilder(QUERY_ORDERS_API_URL)
+                .append("?currentPage=1&pageSize=5");
+        if (userId > 0) {
+            url.append("&userId=").append(userId);
+        }
+        if (!"".equals(vendorId)) {
+            url.append("&vendorId=").append(vendorId);
+        }
+        Log.d(AppConstants.TAG_YIHU, "getOrderList url=" + url.toString());
+        Request request = new Request.Builder().url(url.toString())
+                .addHeader("Connection", "close")
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            String result = "";
+            try {
+                result = response.body().string();
+            } catch(Exception e) {
+                result = GZIPUtils.uncompressToString(response.body().bytes());
+            }
+            OrderResponse responseVO = JSON.parseObject(result, OrderResponse.class);
+            if (responseVO == null) {
+                throw new NoDataException("未查询到数据");
+            }
+            Log.d(AppConstants.TAG_YIHU, "getOrderList fetch size: " + responseVO.getTotalRecords());
+            return responseVO.getOrders();
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public VendorResponse.VendorUser checkUserLogin(String vendorId, String requestId) throws AppException {
+        String url = String.format("%s/vendor/user/get?vendorId=%s&requestId=%s", AppConstants.OSS_API, vendorId, requestId);
+        Log.d(AppConstants.TAG_YIHU, String.format("checkUserLogin url=%s", url));
+        Request request = new Request.Builder().url(url)
+                .addHeader("Connection", "close")
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            VendorResponse resp = JSON.parseObject(result, VendorResponse.class);
+            if (resp.getResult() == 0) {
+                return resp.getData();
+            }
+            return null;
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
     }
 
     public boolean checkPayState(String orderNo) throws AppException {
