@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 
-import com.yihuyixi.vendingmachine.activity.BaseActivity;
+import com.yihuyixi.vendingmachine.BaseActivity;
 import com.yihuyixi.vendingmachine.utils.NetUtils;
 
 public class NetBroadcastReceiver extends BroadcastReceiver {

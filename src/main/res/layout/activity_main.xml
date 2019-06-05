@@ -27,44 +27,61 @@
             android:layout_alignParentBottom="true" />
     </RelativeLayout>
 
+    <GridView
+        android:id="@+id/gv_promote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:numColumns="auto_fit"
+        android:horizontalSpacing="10dp"
+        android:paddingBottom="5dp"
+        android:layout_below="@id/id_videoplayer"
+        >
+    </GridView>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="75dp"
-        android:layout_below="@+id/id_videoplayer"
-        />
+        android:layout_below="@+id/gv_promote"
+        android:layout_marginBottom="75dp" />
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
-        android:padding="15dp"
-        android:gravity="right|center_vertical"
-        android:background="#F3F1F1"
         >
-        <Button
-            android:id="@+id/id_deposit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_circle"
-            android:layout_marginRight="10dp"
-            android:width="100dp"
-            android:height="20dp"
-            android:textColor="@color/colorLightDark"
-            android:text="取货码" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="15dp"
+            android:gravity="right|center_vertical"
+            android:background="#F3F1F1">
+            <Button
+                android:id="@+id/id_deposit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_circle"
+                android:layout_marginRight="10dp"
+                android:width="100dp"
+                android:height="20dp"
+                android:textColor="@color/colorLightDark"
+                android:text="取货码" />
 
-        <Button
-            android:id="@+id/id_help"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_circle"
-            android:layout_toRightOf="@id/id_deposit"
-            android:text="帮助"
-            android:textColor="@color/colorLightDark"
-            android:width="100dp"
-            android:height="20dp"
-            android:onClick="doHelp"
-            />
-    </RelativeLayout>
+            <Button
+                android:id="@+id/id_help"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_circle"
+                android:layout_toRightOf="@id/id_deposit"
+                android:text="帮助"
+                android:textColor="@color/colorLightDark"
+                android:width="100dp"
+                android:height="20dp"
+                />
+        </RelativeLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#ccc" />
+    </FrameLayout>
 </RelativeLayout>

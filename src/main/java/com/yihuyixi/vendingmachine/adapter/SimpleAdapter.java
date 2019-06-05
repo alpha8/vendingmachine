@@ -18,6 +18,9 @@ import com.yihuyixi.vendingmachine.constants.AppConstants;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHolder> {
     protected LayoutInflater mInflater;
     protected List<ProductInfo> mDatas;
@@ -44,15 +47,12 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int position) {
-        Log.d(AppConstants.TAG_YIHU, "onCreateViewHolder");
         View view = mInflater.inflate(R.layout.item_productview, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final @NonNull MyViewHolder holder, int position) {
-        Log.d(AppConstants.TAG_YIHU, "onBindViewHolder");
-        Log.d(AppConstants.TAG_YIHU, mDatas.toString());
         ProductInfo product = mDatas.get(position);
         holder.name.setText(product.getName());
         holder.sellPoint.setText(product.getSellpoint());
@@ -80,25 +80,31 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
     }
 
     public void setDatas(List<ProductInfo> datas) {
+        Log.d(AppConstants.TAG_YIHU, "setDatas, size=" + datas.size());
         mDatas.clear();
         mDatas.addAll(datas);
         this.notifyDataSetChanged();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
-        ImageView avatar;
-        TextView name;
-        TextView sellPoint;
-        TextView price;
-        TextView sellCount;
+    public void addItem(ProductInfo p, int pos) {
+        mDatas.add(p);
+        this.notifyItemInserted(pos);
+    }
 
-        public MyViewHolder(@NonNull View itemView) {
-            super(itemView);
-            name = itemView.findViewById(R.id.id_name);
-            price = itemView.findViewById(R.id.id_price);
-            avatar = itemView.findViewById(R.id.id_avatar);
-            sellPoint = itemView.findViewById(R.id.id_sellpoint);
-            sellCount = itemView.findViewById(R.id.id_count);
+    public List<ProductInfo> getDatas() {
+        return mDatas;
+    }
+
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.id_avatar) ImageView avatar;
+        @BindView(R.id.id_name) TextView name;
+        @BindView(R.id.id_sellpoint) TextView sellPoint;
+        @BindView(R.id.id_price) TextView price;
+        @BindView(R.id.id_count) TextView sellCount;
+
+        public MyViewHolder(@NonNull View view) {
+            super(view);
+            ButterKnife.bind(this, view);
         }
     }
 }

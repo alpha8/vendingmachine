@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="#fff">
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -13,37 +12,37 @@
             android:layout_height="wrap_content"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
-            android:id="@+id/id_avatar"
+            android:id="@+id/id_item_avatar"
             android:minHeight="250dp"/>
         <TextView
-            android:id="@+id/id_name"
+            android:id="@+id/id_item_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="ProductName"
             android:textColor="#000"
             android:textSize="16dp"
-            android:layout_below="@+id/id_avatar"
+            android:layout_below="@+id/id_item_avatar"
             android:paddingLeft="8dp"
             android:paddingTop="5dp"
             />
         <TextView
-            android:id="@+id/id_sellpoint"
+            android:id="@+id/id_item_sellpoint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="Sellpoint"
             android:textColor="#999"
             android:textSize="14dp"
-            android:layout_below="@+id/id_name"
+            android:layout_below="@+id/id_item_name"
             android:paddingLeft="8dp"
             />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/id_sellpoint">
+            android:layout_below="@+id/id_item_sellpoint">
             <TextView
-                android:id="@+id/id_price"
+                android:id="@+id/id_item_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
@@ -51,21 +50,37 @@
                 android:textColor="#f01414"
                 android:textSize="16dp"
                 android:paddingLeft="8dp"
+                android:layout_below="@+id/id_item_sellpoint"
                 />
             <TextView
-                android:id="@+id/id_count"
+                android:id="@+id/id_item_marketPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                tools:text="(已售10件)"
-                android:textColor="#999"
+                tools:text="¥0.00"
+                android:textColor="#ccc"
                 android:textSize="14dp"
                 android:layout_marginLeft="8dp"
-                android:layout_toRightOf="@+id/id_price"
+                android:layout_toRightOf="@+id/id_item_price"
                 android:gravity="bottom"
                 />
+
+            <TextView
+                android:id="@+id/id_item_tips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:background="@drawable/button_tuan_dark"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                tools:text="1-20人"
+                android:textColor="#666"
+                android:textAlignment="center"
+                android:textSize="14dp"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@+id/id_item_marketPrice"
+                android:gravity="top"
+                />
         </LinearLayout>
-
-
     </RelativeLayout>
 </FrameLayout>

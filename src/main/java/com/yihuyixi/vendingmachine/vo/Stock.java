@@ -10,4 +10,11 @@ public class Stock {
     public void setSalesCount(int salesCount) {
         this.salesCount = salesCount;
     }
+
+    @Override
+    public String toString() {
+        return "Stock{" +
+                "salesCount=" + salesCount +
+                '}';
+    }
 }

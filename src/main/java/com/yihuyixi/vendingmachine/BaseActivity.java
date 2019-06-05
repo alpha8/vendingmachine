@@ -1,4 +1,4 @@
-package com.yihuyixi.vendingmachine.activity;
+package com.yihuyixi.vendingmachine;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.receiver.NetBroadcastReceiver;
 import com.yihuyixi.vendingmachine.utils.NetUtils;
+import com.yihuyixi.vendingmachine.utils.Utils;
 
 public class BaseActivity extends AppCompatActivity implements NetBroadcastReceiver.NetworkListener {
     public static NetBroadcastReceiver.NetworkListener mNetworkListener;
@@ -17,6 +18,12 @@ public class BaseActivity extends AppCompatActivity implements NetBroadcastRecei
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mNetworkListener = this;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Utils.hideBottomUIMenu(getWindow());
     }
 
     @Override

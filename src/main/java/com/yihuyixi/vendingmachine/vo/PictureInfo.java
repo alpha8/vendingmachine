@@ -10,4 +10,11 @@ public class PictureInfo {
     public void setId(String id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "PictureInfo{" +
+                "id='" + id + '\'' +
+                '}';
+    }
 }

@@ -73,6 +73,7 @@ public class Artwork {
                 ", price=" + price +
                 ", sellPoint='" + sellPoint + '\'' +
                 ", stock=" + stock +
+                ", pictures=" + pictures +
                 '}';
     }
 }

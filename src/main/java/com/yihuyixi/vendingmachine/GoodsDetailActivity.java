@@ -5,17 +5,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
-import com.yihuyixi.vendingmachine.activity.BaseActivity;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.api.Channels;
 import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
@@ -23,57 +22,48 @@ import com.yihuyixi.vendingmachine.asynctask.PayTimeoutTask;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
+import com.yihuyixi.vendingmachine.message.EventMessage;
 import com.yihuyixi.vendingmachine.sdk.SdkUtils;
-import com.yihuyixi.vendingmachine.utils.Utils;
-import com.yihuyixi.vendingmachine.vo.PayVO;
 import com.yihuyixi.vendingmachine.vo.QrcodeVO;
 import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.youth.banner.Banner;
 import com.youth.banner.loader.ImageLoader;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 public class GoodsDetailActivity extends BaseActivity {
-    private Banner mBanner;
-    private TextView mProductName;
-    private ImageView mQrcode;
-    private ImageView mIvPhone;
-    private TextView mTvTips;
-    private TextView mSellpoint;
-    private TextView mPrice;
-    private TextView mSalesCount;
+    @BindView(R.id.id_banner) Banner mBanner;
+    @BindView(R.id.tv_name) TextView mProductName;
+    @BindView(R.id.id_qrcode) ImageView mQrcode;
+    @BindView(R.id.tv_sellpoint) TextView mSellpoint;
+    @BindView(R.id.tv_price) TextView mPrice;
+    @BindView(R.id.tv_count) TextView mSalesCount;
+    @BindView(R.id.tv_msg) TextView mTvMsg;
+    @BindView(R.id.btn_back) Button mBackButton;
+    @BindView(R.id.fl_pay) FrameLayout mPayLayout;
+    @BindView(R.id.fl_paySuccess) FrameLayout mPaySuccessLayout;
+
     private ProductInfo mProductInfo;
-    private ResponseEntity mResponseEntity;
     private String outChannel;
 
-    private TextView mTvMsg;
-    private Button mBackButton;
     private OrderPayStateTask mPayStateTask;
     private PayTimeoutTask mTimeoutTask;
+    private Unbinder mUnbinder;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch(msg.what) {
-                case AppConstants.FLAG_QRCODE_URL:
-                    mResponseEntity = (ResponseEntity) msg.obj;
-                    String qrcodeUrl = String.format("%s/getQrcode?url=%s", AppConstants.WX_API, mResponseEntity.getUrl());
-                    Glide.with(GoodsDetailActivity.this).load(qrcodeUrl).into(mQrcode);
-                    mQrcode.setVisibility(View.VISIBLE);
-                    mIvPhone.setVisibility(View.VISIBLE);
-                    mTvTips.setVisibility(View.VISIBLE);
-
-                    mTimeoutTask = new PayTimeoutTask(mHandler,"返回（%s秒）");
-                    mTimeoutTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-                    mPayStateTask = new OrderPayStateTask(mHandler);
-                    String preOrderId = mResponseEntity.getData() != null ? mResponseEntity.getData().getId() : "";
-                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, preOrderId, outChannel);
-                    break;
                 case AppConstants.FLAG_PAY_SUCCESS:
-                    mQrcode.setVisibility(View.GONE);
-                    mIvPhone.setVisibility(View.GONE);
-                    mTvTips.setVisibility(View.GONE);
-                    mTvMsg.setVisibility(View.VISIBLE);
+                    mPayLayout.setVisibility(View.GONE);
+                    mPaySuccessLayout.setVisibility(View.VISIBLE);
                     mTvMsg.setText((String)msg.obj);
                     SdkUtils.getInstance().checkout(Integer.parseInt(outChannel.substring(1)));
                     break;
@@ -97,35 +87,24 @@ public class GoodsDetailActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.goods_detail);
+        ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
+
         ProductInfo productInfo = (ProductInfo) getIntent().getSerializableExtra(AppConstants.INTENT_GOODS);
         Log.d(AppConstants.TAG_YIHU, productInfo.toString());
         mProductInfo = productInfo;
-        initRecylcerView(productInfo.getIcons());
+        initBanner(productInfo.getIcons());
         initView(productInfo);
     }
 
     private void initView(ProductInfo productInfo) {
-        mProductName = findViewById(R.id.tv_name);
         mProductName.setText(productInfo.getName());
-
-        mSellpoint = findViewById(R.id.tv_sellpoint);
         mSellpoint.setText(productInfo.getSellpoint());
-
-        mPrice = findViewById(R.id.tv_price);
         mPrice.setText(String.format("¥%s", productInfo.getFormatPrice()));
-
-        mSalesCount = findViewById(R.id.tv_count);
         mSalesCount.setText(String.format("(已售:%s件)", productInfo.getSellCount()));
-
-        mQrcode = findViewById(R.id.id_qrcode);
-        mTvMsg = findViewById(R.id.tv_msg);
-        mIvPhone = findViewById(R.id.iv_phone);
-        mTvTips = findViewById(R.id.tv_tips);
-        mBackButton = findViewById(R.id.btn_back);
     }
 
-    private void initRecylcerView(List<String> icons) {
-        mBanner = findViewById(R.id.id_banner);
+    private void initBanner(List<String> icons) {
         mBanner.setImageLoader(new ImageLoader() {
             @Override
             public void displayImage(Context context, Object path, ImageView imageView) {
@@ -140,38 +119,45 @@ public class GoodsDetailActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Utils.hideBottomUIMenu(getWindow());
-        getQrcode();
+        EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_QRCODE_URL));
     }
 
-    private void getQrcode() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                QrcodeVO qrcode = new QrcodeVO();
-                qrcode.setName(mProductInfo.getName());
-                qrcode.setIcon(mProductInfo.getPictureId());
-                qrcode.setProductId(mProductInfo.getId());
-                qrcode.setPrice(mProductInfo.getPrice());
-                qrcode.setVendingId("茶美自动售卖机(景田店)");
-                outChannel = Channels.getInstance().getRandomChannel();
-                qrcode.setChannelId(outChannel.substring(1));
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void getQrcode(EventMessage event) {
+        if (event.getType() != AppConstants.FLAG_QRCODE_URL) {
+            return;
+        }
+        Log.d(AppConstants.TAG_YIHU, "getQrcode event=" + event.toString());
+        QrcodeVO qrcode = new QrcodeVO();
+        qrcode.setName(mProductInfo.getName());
+        qrcode.setIcon(mProductInfo.getPictureId());
+        qrcode.setProductId(mProductInfo.getId());
+        qrcode.setPrice(mProductInfo.getPrice());
+        qrcode.setVendingId("茶美自动售卖机(景田店)");
+        outChannel = Channels.getInstance().getRandomChannel();
+        qrcode.setChannelId(outChannel.substring(1));
 
-                Message message = mHandler.obtainMessage();
-                try {
-                    String json = JSON.toJSONString(qrcode);
-                    ResponseEntity responseEntity = Api.getInstance().getWxPay(json);
-                    message.what = AppConstants.FLAG_QRCODE_URL;
-                    message.obj = responseEntity;
-                    mHandler.sendMessage(message);
-                } catch (AppException e) {
-                    Log.e(AppConstants.TAG_YIHU, e.getMessage());
-                    message.what = AppConstants.FLAG_ERROR;
-                    message.obj = e.getMessage();
-                    mHandler.sendMessage(message);
+        try {
+            String json = JSON.toJSONString(qrcode);
+            ResponseEntity responseEntity = Api.getInstance().getWxPay(json);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String qrcodeUrl = String.format("%s/getQrcode?url=%s", AppConstants.WX_API, responseEntity.getUrl());
+                    Glide.with(GoodsDetailActivity.this).load(qrcodeUrl).into(mQrcode);
+                    mPayLayout.setVisibility(View.VISIBLE);
+
+                    mTimeoutTask = new PayTimeoutTask(mHandler,"返回（%s秒）");
+                    mTimeoutTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                    mPayStateTask = new OrderPayStateTask(mHandler);
+                    String preOrderId = responseEntity.getData() != null ? responseEntity.getData().getId() : "";
+                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, preOrderId, outChannel);
                 }
-            }
-        }).start();
+            });
+        } catch (AppException e) {
+            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+        }
     }
 
     public void goBack(View view) {
@@ -186,7 +172,7 @@ public class GoodsDetailActivity extends BaseActivity {
         if (mBanner != null) {
             mBanner.stopAutoPlay();
         }
-        mTvMsg.setVisibility(View.GONE);
+        mPaySuccessLayout.setVisibility(View.GONE);
         this.mPayStateTask.cancelJob();
         this.mTimeoutTask.cancelJob();
     }
@@ -197,5 +183,14 @@ public class GoodsDetailActivity extends BaseActivity {
         if (mBanner != null) {
             mBanner.startAutoPlay();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mUnbinder != null) {
+            mUnbinder.unbind();
+        }
+        EventBus.getDefault().unregister(this);
     }
 }
