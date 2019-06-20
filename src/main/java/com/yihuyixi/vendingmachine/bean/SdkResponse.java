@@ -1,6 +1,7 @@
 package com.yihuyixi.vendingmachine.bean;
 
 import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
+import com.yihuyixi.vendingmachine.MainActivity;
 
 import java.io.Serializable;
 
@@ -69,6 +70,22 @@ public class SdkResponse implements Serializable {
             return cmdString.substring(18,34);
         }
         return "";
+    }
+
+    public String getRealOrderNo() {
+        String orderNo = getOrderNo();
+        int noZeroPos = -1;
+        char[] charsArray = orderNo.toCharArray();
+        for(int i=0; i< charsArray.length; i++) {
+            if (charsArray[i] != '0') {
+                noZeroPos = i;
+                break;
+            }
+        }
+        if (noZeroPos == -1) {
+            return orderNo;
+        }
+        return orderNo.substring(noZeroPos);
     }
 
     public String getCode() {

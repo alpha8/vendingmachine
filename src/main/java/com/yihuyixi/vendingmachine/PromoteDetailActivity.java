@@ -44,6 +44,7 @@ public class PromoteDetailActivity extends BaseActivity{
     @BindView(R.id.id_detail_price) TextView mPrice;
     @BindView(R.id.id_detail_marketPrice) TextView mMarketPrice;
     @BindView(R.id.id_detail_limitcount) TextView mLimitCount;
+    @BindView(R.id.id_detail_tips) TextView mScanTips;
     @BindView(R.id.id_detail_qrcode) ImageView mQrcode;
     @BindView(R.id.id_detail_back) Button mBackButton;
 
@@ -94,6 +95,7 @@ public class PromoteDetailActivity extends BaseActivity{
         mSellpoint.setText(goods.getSellPoint());
         //1: bargain   2: tuan
         if (goods.getType() == 1) {
+            mScanTips.setText("请使用微信扫码发起砍价");
             mPrice.setText(String.format("底价:¥%s", Utils.getFormatPrice(goods.getButtomFee())));
             int persons = (int)Math.floor((goods.getFieldPrice() - goods.getButtomFee()) / goods.getForwardFee());
             if (persons > 1) {
@@ -102,10 +104,11 @@ public class PromoteDetailActivity extends BaseActivity{
                 mLimitCount.setText("1人");
             }
         } else {
+            mScanTips.setText("请使用微信扫码发起拼团");
             mPrice.setText(String.format("拼团价:¥%s", Utils.getFormatPrice(goods.getButtomFee())));
             mLimitCount.setText(String.format("%s人拼团", goods.getLimitCount()));
         }
-        mMarketPrice.setText(Utils.getFormatPrice(goods.getFieldPrice()));
+        mMarketPrice.setText(String.format("¥%s", Utils.getFormatPrice(goods.getFieldPrice())));
         mMarketPrice.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
     }
 

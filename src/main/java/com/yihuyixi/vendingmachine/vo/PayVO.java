@@ -6,6 +6,15 @@ public class PayVO implements Serializable {
     private String id;
     private String trade_state;
     private String trade_no;
+    private String channelNo;
+
+    public String getChannelNo() {
+        return channelNo;
+    }
+
+    public void setChannelNo(String channelNo) {
+        this.channelNo = channelNo;
+    }
 
     public String getTrade_state() {
         return trade_state;
@@ -37,6 +46,7 @@ public class PayVO implements Serializable {
                 "id='" + id + '\'' +
                 ", trade_state='" + trade_state + '\'' +
                 ", trade_no='" + trade_no + '\'' +
+                ", channelNo='" + channelNo + '\'' +
                 '}';
     }
 }

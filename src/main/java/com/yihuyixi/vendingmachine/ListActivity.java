@@ -1,6 +1,5 @@
 package com.yihuyixi.vendingmachine;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,10 +22,7 @@ import com.yihuyixi.vendingmachine.divider.DividerItemDecoration;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.vo.ExtGoods;
-import com.youth.banner.Banner;
-import com.youth.banner.loader.ImageLoader;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -37,7 +33,7 @@ import butterknife.Unbinder;
 import static com.yihuyixi.vendingmachine.constants.AppConstants.TAG_YIHU;
 
 public class ListActivity extends BaseActivity {
-    @BindView(R.id.id_list_banner) Banner mBanner;
+    @BindView(R.id.id_list_banner) ImageView mBanner;
     @BindView(R.id.id_list_recyclerview) RecyclerView mRecyclerView;
     @BindView(R.id.id_list_back)  Button mBackButton;
     private Unbinder mUnbinder;
@@ -108,21 +104,11 @@ public class ListActivity extends BaseActivity {
     }
 
     private void initBanner() {
-        List<String> icons = new ArrayList<>();
+        String icon = "http://www.yihuyixi.com/ps/download/5cf8c012e4b01cc3f1728204";
         if (mSectionType == GoodsType.TUAN) {
-            icons.add("http://www.yihuyixi.com/ps/download/5cf0e849e4b05f18f0d23e62");
-        } else {
-            icons.add("http://www.yihuyixi.com/ps/download/5cf0e849e4b05f18f0d23e63");
+            icon = "http://www.yihuyixi.com/ps/download/5cf8c012e4b01cc3f1728203";
         }
-        mBanner.setImageLoader(new ImageLoader() {
-            @Override
-            public void displayImage(Context context, Object path, ImageView imageView) {
-                Glide.with(ListActivity.this).load(path).into(imageView);
-            }
-        });
-        mBanner.setImages(icons);
-        mBanner.setDelayTime(3000);
-        mBanner.start();
+        Glide.with(ListActivity.this).load(icon).into(mBanner);
     }
 
     @OnClick(R.id.id_list_back)
@@ -130,20 +116,26 @@ public class ListActivity extends BaseActivity {
         this.finish();
     }
 
+    private volatile boolean isLeave = false;
     @Override
     protected void onStop() {
         super.onStop();
-        if (mBanner != null) {
-            mBanner.stopAutoPlay();
-        }
+        this.isLeave = true;
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        if (mBanner != null) {
-            mBanner.startAutoPlay();
-        }
+    protected void onResume() {
+        super.onResume();
+        this.isLeave = false;
+
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isLeave) {
+                    ListActivity.this.finish();
+                }
+            }
+        }, 2 * 60000);
     }
 
     @Override

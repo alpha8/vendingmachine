@@ -15,11 +15,14 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
+import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.api.Channels;
 import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
 import com.yihuyixi.vendingmachine.asynctask.PayTimeoutTask;
+import com.yihuyixi.vendingmachine.bean.ChannelResponse;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
+import com.yihuyixi.vendingmachine.bean.SdkResponse;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.message.EventMessage;
@@ -52,7 +55,6 @@ public class GoodsDetailActivity extends BaseActivity {
     @BindView(R.id.fl_paySuccess) FrameLayout mPaySuccessLayout;
 
     private ProductInfo mProductInfo;
-    private String outChannel;
 
     private OrderPayStateTask mPayStateTask;
     private PayTimeoutTask mTimeoutTask;
@@ -65,7 +67,6 @@ public class GoodsDetailActivity extends BaseActivity {
                     mPayLayout.setVisibility(View.GONE);
                     mPaySuccessLayout.setVisibility(View.VISIBLE);
                     mTvMsg.setText((String)msg.obj);
-                    SdkUtils.getInstance().checkout(Integer.parseInt(outChannel.substring(1)));
                     break;
                 case AppConstants.FLAG_PAY_FAIL:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
@@ -132,10 +133,9 @@ public class GoodsDetailActivity extends BaseActivity {
         qrcode.setName(mProductInfo.getName());
         qrcode.setIcon(mProductInfo.getPictureId());
         qrcode.setProductId(mProductInfo.getId());
-        qrcode.setPrice(mProductInfo.getPrice());
-        qrcode.setVendingId("茶美自动售卖机(景田店)");
-        outChannel = Channels.getInstance().getRandomChannel();
-        qrcode.setChannelId(outChannel.substring(1));
+//        qrcode.setPrice(mProductInfo.getPrice());
+        qrcode.setPrice(0.01f);
+        qrcode.setVendingId(AppConstants.VENDOR_ID);
 
         try {
             String json = JSON.toJSONString(qrcode);
@@ -152,7 +152,7 @@ public class GoodsDetailActivity extends BaseActivity {
 
                     mPayStateTask = new OrderPayStateTask(mHandler);
                     String preOrderId = responseEntity.getData() != null ? responseEntity.getData().getId() : "";
-                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, preOrderId, outChannel);
+                    mPayStateTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, preOrderId);
                 }
             });
         } catch (AppException e) {
@@ -191,6 +191,31 @@ public class GoodsDetailActivity extends BaseActivity {
         if (mUnbinder != null) {
             mUnbinder.unbind();
         }
+        EventBus.getDefault().removeAllStickyEvents();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
+    public void deliverySucceed(EventMessage message) {
+        if (message.getType() == AppConstants.FLAG_SDK_SUCCESS) {
+            SdkResponse response = (SdkResponse) message.getData();
+            if (response.getType() == WMSSendType.SHIPMENTS) {
+                String orderNo = response.getRealOrderNo();
+                ChannelResponse.ChannelVO channelVO = new ChannelResponse.ChannelVO();
+                channelVO.setChannelNo(orderNo);
+                channelVO.setDeviceId(AppConstants.VENDOR_ID);
+                channelVO.setCount(1);
+                String json = JSON.toJSONString(channelVO);
+                try {
+                    ProductInfo pi = Api.getInstance().stockOut(json);
+                    Log.d(AppConstants.TAG_YIHU, "stock out response=" + pi);
+                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_STOCK_INFO, pi));
+                } catch (AppException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                //todo: 异常出货，上报服务端处理
+            }
+        }
     }
 }

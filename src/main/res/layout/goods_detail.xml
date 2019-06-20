@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".GoodsDetailActivity"
+    android:background="#fff"
     android:layout_gravity="center_horizontal"
     android:orientation="vertical">
 
@@ -128,7 +129,7 @@
         android:id="@+id/btn_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_circle_dark"
+        android:background="@drawable/button_circle"
         android:layout_gravity="center_horizontal"
         android:onClick="goBack"
         android:layout_marginTop="180dp"
@@ -136,6 +137,7 @@
         android:textSize="26dp"
         android:width="300dp"
         android:height="65dp"
+        style="?android:attr/borderlessButtonStyle"
         android:text="返回" />
 
 </LinearLayout>

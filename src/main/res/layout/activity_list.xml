@@ -8,9 +8,11 @@
     android:gravity="top|center_horizontal"
     android:orientation="vertical">
 
-    <com.youth.banner.Banner
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="235dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
         android:id="@+id/id_list_banner"
         android:layout_marginBottom="8dp"
         />
@@ -37,17 +39,18 @@
                 android:id="@+id/id_list_back"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/button_circle_dark"
+                android:background="@drawable/button_circle"
                 android:layout_gravity="center_horizontal"
                 android:textColor="@color/colorLightDark"
                 android:width="100dp"
                 android:height="20dp"
+                style="?android:attr/borderlessButtonStyle"
                 android:text="返回" />
         </RelativeLayout>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#ccc" />
+            android:background="@color/colorFooterDash" />
     </FrameLayout>
 
 </RelativeLayout>

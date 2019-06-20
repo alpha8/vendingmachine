@@ -3,49 +3,53 @@ package com.yihuyixi.vendingmachine.vo;
 import java.util.List;
 
 public class ResponseVO {
-    private int totalPages;
-    private int pageSize;
-    private int currentPage;
-    private int totalRecords;
-    private List<Artwork> artworks;
+    private int result;
+    private DeviceVO data;
 
-    public int getTotalPages() {
-        return totalPages;
+    public int getResult() {
+        return result;
     }
 
-    public void setTotalPages(int totalPages) {
-        this.totalPages = totalPages;
+    public void setResult(int result) {
+        this.result = result;
     }
 
-    public int getPageSize() {
-        return pageSize;
+    public DeviceVO getData() {
+        return data;
     }
 
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+    public void setData(DeviceVO data) {
+        this.data = data;
     }
 
-    public int getCurrentPage() {
-        return currentPage;
-    }
+    public static class DeviceVO {
+        private String deviceId;
+        private String name;
 
-    public void setCurrentPage(int currentPage) {
-        this.currentPage = currentPage;
-    }
+        public String getDeviceId() {
+            return deviceId;
+        }
 
-    public int getTotalRecords() {
-        return totalRecords;
-    }
+        public void setDeviceId(String deviceId) {
+            this.deviceId = deviceId;
+        }
 
-    public void setTotalRecords(int totalRecords) {
-        this.totalRecords = totalRecords;
-    }
+        public String getName() {
+            return name;
+        }
 
-    public List<Artwork> getArtworks() {
-        return artworks;
-    }
+        public void setName(String name) {
+            this.name = name;
+        }
 
-    public void setArtworks(List<Artwork> artworks) {
-        this.artworks = artworks;
+        private List<Artwork> products;
+
+        public List<Artwork> getProducts() {
+            return products;
+        }
+
+        public void setProducts(List<Artwork> products) {
+            this.products = products;
+        }
     }
 }

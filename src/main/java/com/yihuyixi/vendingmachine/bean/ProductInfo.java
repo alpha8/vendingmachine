@@ -13,6 +13,28 @@ public class ProductInfo implements Serializable {
     private int sellCount;
     private List<String> icons;
     private String pictureId;
+    private int stock;
+    private int status;
+
+    public boolean isSaleoff() {
+        return status == 1;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
 
     public String getPictureId() {
         return pictureId;
@@ -86,12 +108,15 @@ public class ProductInfo implements Serializable {
     @Override
     public String toString() {
         return "ProductInfo{" +
+                "id='" + id + '\'' +
                 "name='" + name + '\'' +
                 ", avatar='" + avatar + '\'' +
                 ", pictureId='" + pictureId + '\'' +
                 ", price=" + price +
                 ", sellpoint='" + sellpoint + '\'' +
                 ", sellCount='" + sellCount + '\'' +
+                ", status='" + status + '\'' +
+                ", stock='" + stock + '\'' +
                 '}';
     }
 }

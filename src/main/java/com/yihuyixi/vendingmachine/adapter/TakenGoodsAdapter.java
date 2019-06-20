@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -58,9 +59,10 @@ public class TakenGoodsAdapter extends RecyclerView.Adapter<TakenGoodsAdapter.Ta
     public void onBindViewHolder(final @NonNull TakenViewHolder holder, int position) {
         OrderInfo orderInfo = mDatas.get(position);
         holder.name.setText(orderInfo.getTitle());
-        if (orderInfo.getVendor() != null) {
-            holder.code.setText(String.format("兑换码: %s", orderInfo.getVendor().getPickCode()));
+        if (orderInfo.getExpress() != null) {
+            holder.code.setText(String.format("用户名：%s", orderInfo.getExpress().getReceiver()));
         }
+        holder.createAt.setText(String.format("下单时间: %s", Utils.getFormatDate(orderInfo.getCreateAt())));
         if (orderInfo.getProducts() != null && !orderInfo.getProducts().isEmpty()) {
             Glide.with(mContext).load(Utils.getPictureServerUrl(orderInfo.getProducts().get(0).getIcon())).into(holder.icon);
         }
@@ -104,6 +106,7 @@ public class TakenGoodsAdapter extends RecyclerView.Adapter<TakenGoodsAdapter.Ta
         @BindView(R.id.id_takengoods_icon) ImageView icon;
         @BindView(R.id.id_takengoods_name) TextView name;
         @BindView(R.id.id_takengoods_code) TextView code;
+        @BindView(R.id.id_takengoods_time) TextView createAt;
 
         public TakenViewHolder(@NonNull View view) {
             super(view);

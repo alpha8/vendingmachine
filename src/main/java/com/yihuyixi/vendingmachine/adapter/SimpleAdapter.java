@@ -59,7 +59,12 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
         holder.price.setText(String.format("¥%s", product.getFormatPrice()));
         holder.sellCount.setText(String.format("(已售%d件)", product.getSellCount()));
         Glide.with(context).load(product.getAvatar()).into(holder.avatar);
-        setItemEvent(holder);
+        if (product.isSaleoff()) {
+            holder.salesOff.setVisibility(View.VISIBLE);
+        } else {
+            holder.salesOff.setVisibility(View.GONE);
+            setItemEvent(holder);
+        }
     }
 
     protected void setItemEvent(@NonNull final MyViewHolder holder) {
@@ -90,6 +95,19 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
         mDatas.add(p);
         this.notifyItemInserted(pos);
     }
+    public void updateItem(ProductInfo p) {
+        int pos = -1;
+        for(int i=0; i<mDatas.size(); i++) {
+            ProductInfo pi = mDatas.get(i);
+            if (pi.getId() == p.getId()) {
+                pi.setStatus(p.getStatus());
+                pi.setStatus(p.getStock());
+                pos = i;
+                break;
+            }
+        }
+        this.notifyItemChanged(pos);
+    }
 
     public List<ProductInfo> getDatas() {
         return mDatas;
@@ -101,6 +119,7 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
         @BindView(R.id.id_sellpoint) TextView sellPoint;
         @BindView(R.id.id_price) TextView price;
         @BindView(R.id.id_count) TextView sellCount;
+        @BindView(R.id.id_product_saleoff) ImageView salesOff;
 
         public MyViewHolder(@NonNull View view) {
             super(view);

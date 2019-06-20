@@ -3,6 +3,8 @@ package com.yihuyixi.vendingmachine.api;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.yihuyixi.vendingmachine.bean.ChannelResponse;
+import com.yihuyixi.vendingmachine.bean.DeviceInfo;
 import com.yihuyixi.vendingmachine.bean.GoodsType;
 import com.yihuyixi.vendingmachine.bean.OrderInfo;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
@@ -11,12 +13,15 @@ import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.utils.GZIPUtils;
 import com.yihuyixi.vendingmachine.vo.Artwork;
+import com.yihuyixi.vendingmachine.vo.DeviceInfoResponse;
 import com.yihuyixi.vendingmachine.vo.ExtGoods;
 import com.yihuyixi.vendingmachine.vo.ExtGoodsResponse;
 import com.yihuyixi.vendingmachine.vo.OrderResponse;
+import com.yihuyixi.vendingmachine.vo.PayVO;
 import com.yihuyixi.vendingmachine.vo.PictureInfo;
 import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.yihuyixi.vendingmachine.vo.ResponseVO;
+import com.yihuyixi.vendingmachine.vo.VendorOrderResponse;
 import com.yihuyixi.vendingmachine.vo.VendorResponse;
 
 import java.io.IOException;
@@ -30,12 +35,15 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class Api {
-    private static final String GOODS_API_URL = AppConstants.CMS_API + "/artwork/list?artworkTypeName=tea";
+    private static final String GOODS_API_URL = AppConstants.OSS_API + "/virtualShelf/list?deviceId=";
     private static final String QRCODE_API_URL = AppConstants.OSS_API + "/preorder/add";
     private static final String QUERY_ORDER_API_URL = AppConstants.WX_API + "/wx/orderquery?preId=";
     private static final String QUERY_SPECIAL_GOODS_API_URL = AppConstants.SPECIAL_GOODS_API + "/specialfield/list";
     private static final String QUERY_GOODS_API_URL = AppConstants.BASE_API + "/yihu/artwork/";
     private static final String QUERY_ORDERS_API_URL = AppConstants.CMS_API + "/order/list";
+    private static final String TAKEN_SUCCESS_URL = AppConstants.CMS_API + "/vendor/pickSuccess";
+    private static final String QUERY_DEVICEINFO_URL = AppConstants.OSS_API + "/device/get/";
+    private static final String STOCK_OUT_URL = AppConstants.OSS_API + "/stock/out";
 
     private static final String CONTENT_TYPE = "contentType";
     private static final String JSON_TYPE = "application/json; charset=utf-8";
@@ -56,9 +64,27 @@ public class Api {
         return url;
     }
 
+    public boolean takenSuccess(String json) throws AppException {
+        Log.d(AppConstants.TAG_YIHU, "takenSuccess params: " + json);
+        RequestBody body = RequestBody.create(MediaType.parse(JSON_TYPE), json);
+        Request request = new Request.Builder().url(TAKEN_SUCCESS_URL)
+                .addHeader("Connection", "close")
+                .post(body)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            Log.d(AppConstants.TAG_YIHU, "takenSuccess response:" + result);
+            VendorOrderResponse resp = JSON.parseObject(result, VendorOrderResponse.class);
+            return resp.getResult() == 0;
+        }catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
     public List<OrderInfo> getOrderList(String vendorId, int userId) throws AppException {
         StringBuilder url = new StringBuilder(QUERY_ORDERS_API_URL)
-                .append("?currentPage=1&pageSize=5");
+                .append("?currentPage=1&pageSize=50");
         if (userId > 0) {
             url.append("&userId=").append(userId);
         }
@@ -109,7 +135,7 @@ public class Api {
         }
     }
 
-    public boolean checkPayState(String orderNo) throws AppException {
+    public PayVO checkPayState(String orderNo) throws AppException {
         String url = QUERY_ORDER_API_URL + orderNo;
         Log.d(AppConstants.TAG_YIHU, String.format("queryPayState url=%s", url));
         Request request = new Request.Builder().url(url)
@@ -121,9 +147,9 @@ public class Api {
             String result = response.body().string();
             ResponseEntity resp = JSON.parseObject(result, ResponseEntity.class);
             if (resp.getResult() == 0 && AppConstants.PAY_SUCCESS.equalsIgnoreCase(resp.getData().getTrade_state())) {
-                return true;
+                return resp.getData();
             }
-            return false;
+            return null;
         } catch(IOException e) {
             throw new AppException("网络异常，请稍候再试！", e);
         }
@@ -158,7 +184,7 @@ public class Api {
             url.append("&pageSize=").append(pageSize);
         }
         if (type == GoodsType.BARGAIN) {
-            url.append("&type=1");
+            url.append("&type=1&status=0");
         } else {
             url.append("&type=2&online=true");
         }
@@ -210,13 +236,8 @@ public class Api {
         }
     }
 
-    public List<ProductInfo> getGoods(int pageIndex, int pageSize) throws AppException {
-        pageIndex = pageIndex <= 0 ? 1 : pageIndex;
-        StringBuilder url = new StringBuilder(GOODS_API_URL)
-                .append("&scoreSort=true&commodityStatesId=2&price=0-800&currentPage=" + pageIndex);
-        if (pageSize > 0) {
-            url.append("&pageSize=" + pageSize);
-        }
+    public List<ProductInfo> getGoods(String deviceId) throws AppException {
+        StringBuilder url = new StringBuilder(GOODS_API_URL).append(deviceId);
         Log.d(AppConstants.TAG_YIHU, "getGoods url=" + url.toString());
         Request request = new Request.Builder().url(url.toString())
                 .addHeader("Connection", "close")
@@ -237,18 +258,19 @@ public class Api {
 
     private List<ProductInfo> handleGoodsResponse(String result) {
         ResponseVO responseVO = JSON.parseObject(result, ResponseVO.class);
-        if (responseVO == null) {
+        if (responseVO == null || responseVO.getData() == null || responseVO.getData().getProducts() == null) {
             throw new NoDataException("未查询到数据");
         }
-        Log.d(AppConstants.TAG_YIHU, "getGoods fetch size: " + responseVO.getTotalRecords());
         List<ProductInfo> products = new ArrayList<>();
-        for(Artwork artwork : responseVO.getArtworks()) {
+        for(Artwork artwork : responseVO.getData().getProducts()) {
             ProductInfo p = new ProductInfo();
-            p.setId(artwork.getId());
+            p.setId(artwork.getPid());
             p.setName(artwork.getName());
             p.setPrice(artwork.getPrice());
             p.setSellCount(artwork.getSalesCount());
             p.setSellpoint(artwork.getSellPoint());
+            p.setStatus(artwork.getStatus());
+            p.setStock(artwork.getStock());
             List<PictureInfo> pictures = artwork.getPictures();
             if (pictures != null && !pictures.isEmpty()) {
                 p.setPictureId(pictures.get(0).getId());
@@ -263,5 +285,45 @@ public class Api {
             products.add(p);
         }
         return products;
+    }
+
+    public DeviceInfo getDeviceInfo(String deviceId) throws AppException {
+        String url = QUERY_DEVICEINFO_URL + deviceId;
+        Request request = new Request.Builder().url(QUERY_DEVICEINFO_URL)
+                .addHeader("Connection", "close")
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        Log.d(AppConstants.TAG_YIHU, String.format("getDeviceInfo url=%s", url));
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            DeviceInfoResponse resp = JSON.parseObject(result, DeviceInfoResponse.class);
+            if (resp.getResult() == 0) {
+                return resp.getData();
+            }
+            return null;
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public ProductInfo stockOut(String json) throws AppException {
+        RequestBody body = RequestBody.create(MediaType.parse(JSON_TYPE), json);
+        Request request = new Request.Builder().url(STOCK_OUT_URL)
+                .addHeader("Connection", "close")
+                .post(body)
+                .build();
+        Log.d(AppConstants.TAG_YIHU, String.format("stockOut url=%s, json=%s", STOCK_OUT_URL, json));
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            ChannelResponse resp = JSON.parseObject(result, ChannelResponse.class);
+            if (resp.getResult() == 0 && resp.getData() != null) {
+                return resp.getData().getProduct();
+            }
+            return null;
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
     }
 }

@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -17,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".TakenGoodsActivity"></activity>
+        <activity android:name=".TakenSuccessActivity"></activity>
+        <activity android:name=".TakenGoodsActivity" />
         <activity android:name=".PromoteDetailActivity" />
         <activity android:name=".ListActivity" />
         <activity android:name=".SplashActivity">
@@ -51,6 +53,7 @@
         </receiver>
 
         <activity android:name=".MainActivity" />
+        <activity android:name=".ChannelActivity" />
     </application>
 
 </manifest>

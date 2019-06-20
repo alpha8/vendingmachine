@@ -9,8 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/id_code_tips"
-        android:layout_marginBottom="30dp"
-        android:text="微信扫码兑换物品"
+        android:layout_marginBottom="15dp"
+        android:text="微信扫码取货"
         android:textSize="26dp"
         android:textAlignment="center"/>
     <ImageView
@@ -25,16 +25,16 @@
         android:layout_below="@+id/iv_exchange_qrcode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_circle_dark"
+        android:background="@drawable/button_circle"
         android:layout_gravity="center_horizontal"
         android:onClick="goBack"
         android:textColor="@color/colorLightDark"
-        android:textSize="24dp"
+        android:textSize="26dp"
         android:width="300dp"
         android:height="65dp"
-        android:text="返回"
+        android:text="返 回"
         android:gravity="center"
         android:layout_centerInParent="true"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="30dp"
         />
 </RelativeLayout>

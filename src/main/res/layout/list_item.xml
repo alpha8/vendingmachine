@@ -13,7 +13,7 @@
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
             android:id="@+id/id_item_avatar"
-            android:minHeight="250dp"/>
+            android:minHeight="260dp"/>
         <TextView
             android:id="@+id/id_item_name"
             android:layout_width="match_parent"
@@ -40,6 +40,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="3px"
             android:layout_below="@+id/id_item_sellpoint">
             <TextView
                 android:id="@+id/id_item_price"
@@ -48,7 +49,7 @@
                 android:singleLine="true"
                 tools:text="¥0.00"
                 android:textColor="#f01414"
-                android:textSize="16dp"
+                android:textSize="14dp"
                 android:paddingLeft="8dp"
                 android:layout_below="@+id/id_item_sellpoint"
                 />
@@ -71,15 +72,16 @@
                 android:layout_height="wrap_content"
                 android:singleLine="true"
                 android:background="@drawable/button_tuan_dark"
-                android:paddingLeft="20dp"
-                android:paddingRight="20dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
                 tools:text="1-20人"
-                android:textColor="#666"
+                android:textColor="#999"
                 android:textAlignment="center"
                 android:textSize="14dp"
                 android:layout_marginLeft="8dp"
                 android:layout_toRightOf="@+id/id_item_marketPrice"
                 android:gravity="top"
+                android:layout_marginBottom="4px"
                 />
         </LinearLayout>
     </RelativeLayout>

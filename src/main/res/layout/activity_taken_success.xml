@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TakenSuccessActivity"
+    android:background="#fff"
+    android:layout_gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="490dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="180dp"
+        >
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="430dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:layout_gravity="center"
+            android:src="@mipmap/outbound"
+            />
+    </FrameLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        >
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/blue_button_circle"
+            android:textColor="@color/colorWhite"
+            android:textSize="26dp"
+            android:width="280dp"
+            android:height="65dp"
+            android:text="继续取件"
+            android:id="@+id/id_success_continue"
+            android:layout_marginRight="30dp"
+            style="?android:attr/borderlessButtonStyle"
+            />
+
+        <Button
+            android:id="@+id/id_success_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_circle"
+            android:textColor="@color/colorLightDark"
+            android:textSize="26dp"
+            android:layout_toRightOf="@+id/id_success_continue"
+            android:width="280dp"
+            android:height="65dp"
+            style="?android:attr/borderlessButtonStyle"
+            android:text="返回首页" />
+    </RelativeLayout>
+
+</LinearLayout>

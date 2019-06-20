@@ -3,19 +3,46 @@ package com.yihuyixi.vendingmachine.vo;
 import java.util.List;
 
 public class Artwork {
-    private String id;
+    private String pid;
     private String name;
     private float price;
+    private float oldPrice;
     private List<PictureInfo> pictures;
     private String sellPoint;
-    private Stock stock;
+    private int salesCount;
+    private int status;
+    private int stock;
 
-    public String getId() {
-        return id;
+    public int getStatus() {
+        return status;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public float getOldPrice() {
+        return oldPrice;
+    }
+
+    public void setOldPrice(float oldPrice) {
+        this.oldPrice = oldPrice;
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
     }
 
     public String getName() {
@@ -51,28 +78,22 @@ public class Artwork {
     }
 
     public int getSalesCount() {
-        if (stock != null) {
-            return stock.getSalesCount();
-        }
-        return 0;
+        return salesCount;
     }
 
-    public Stock getStock() {
-        return stock;
-    }
-
-    public void setStock(Stock stock) {
-        this.stock = stock;
+    public void setSalesCount(int salesCount) {
+        this.salesCount = salesCount;
     }
 
     @Override
     public String toString() {
         return "Artwork{" +
-                "id='" + id + '\'' +
+                "pid='" + pid + '\'' +
                 ", name='" + name + '\'' +
                 ", price=" + price +
+                ", oldPrice=" + oldPrice +
                 ", sellPoint='" + sellPoint + '\'' +
-                ", stock=" + stock +
+                ", salesCount='" + salesCount + '\'' +
                 ", pictures=" + pictures +
                 '}';
     }

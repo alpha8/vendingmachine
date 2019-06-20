@@ -14,7 +14,15 @@
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
             android:id="@+id/id_avatar"
-            android:minHeight="250dp"/>
+            android:minHeight="260dp"/>
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:id="@+id/id_product_saleoff"
+            android:src="@mipmap/saleoff"
+            android:scaleType="fitEnd"
+            android:visibility="gone"
+            />
         <TextView
             android:id="@+id/id_name"
             android:layout_width="match_parent"

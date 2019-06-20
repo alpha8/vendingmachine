@@ -12,4 +12,6 @@
     <color name="colorMolv">#00bb9c</color>
     <color name="colorWhite">#f2f2f2</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorCommonFooter">#F3F1F1</color>
+    <color name="colorFooterDash">#DEDEDE</color>
 </resources>

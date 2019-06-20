@@ -6,6 +6,7 @@
         <item name="colorPrimary">@color/colorDark</item>
         <item name="colorPrimaryDark">@color/colorDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="borderlessButtonStyle"></item>
         <!--自定义AlertDialog
         <item name="alertDialogTheme">@style/Theme.AppCompat.Light.Dialog.Alert.Self</item>-->
     </style>

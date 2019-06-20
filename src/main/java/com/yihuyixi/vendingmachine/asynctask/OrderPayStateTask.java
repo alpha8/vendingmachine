@@ -8,6 +8,8 @@ import android.util.Log;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
+import com.yihuyixi.vendingmachine.sdk.SdkUtils;
+import com.yihuyixi.vendingmachine.vo.PayVO;
 
 import java.util.Arrays;
 
@@ -29,13 +31,14 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
     @Override
     protected OrderPayStateTask.JobResult doInBackground(String... params) {
         Log.d(AppConstants.TAG_YIHU, "doInBackground params: " + Arrays.toString(params));
-        if (params.length > 1) {
+        if (params.length >= 1) {
             while(!isStop && --SECONDS >= 0){
                 try {
-                    boolean isSuccess = Api.getInstance().checkPayState(params[0]);
-                    String cluster = params[1].substring(0, 1);
-                    if (isSuccess) {
-                        return new JobResult(true, String.format("支付成功！请从%s柜拿取货物。", cluster));
+                    PayVO payVO = Api.getInstance().checkPayState(params[0]);
+                    if (payVO != null && payVO.getChannelNo() != null) {
+                        Log.d(AppConstants.TAG_YIHU, "payVO=" + payVO.toString());
+                        String cluster = Integer.parseInt(payVO.getChannelNo()) < 60 ? "A" : "B";
+                        return new JobResult(true, String.format("支付成功！请从%s柜拿取货物。", cluster), payVO.getChannelNo());
                     }
                     Thread.sleep(1000);
                 } catch (AppException | InterruptedException e) {
@@ -57,7 +60,8 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
             return;
         }
         Message message = mHandler.obtainMessage();
-        if (jobResult.isSuccess) {
+        if (jobResult.isSuccess && jobResult.channelNo != null) {
+            SdkUtils.getInstance().checkout(jobResult.channelNo, jobResult.channelNo);
             message.what = AppConstants.FLAG_PAY_SUCCESS;
         } else {
             message.what = AppConstants.FLAG_PAY_FAIL;
@@ -69,6 +73,7 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
     class JobResult {
         private boolean isSuccess;
         private String message;
+        private Integer channelNo;
 
         public JobResult() {
 
@@ -77,6 +82,14 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
         public JobResult(boolean isSuccess, String message) {
             this.isSuccess = isSuccess;
             this.message = message;
+        }
+
+        public JobResult(boolean isSuccess, String message, String channelNo) {
+            this.isSuccess = isSuccess;
+            this.message = message;
+            if (channelNo != null && !channelNo.equals("")) {
+                this.channelNo = Integer.parseInt(channelNo);
+            }
         }
 
         public boolean isSuccess() {

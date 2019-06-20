@@ -5,12 +5,13 @@
     android:layout_height="match_parent"
     tools:context=".TakenGoodsActivity"
     android:layout_gravity="center"
+    android:background="#fff"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:background="@color/colorMolv"
+        android:background="@color/colorCommonFooter"
         android:gravity="center"
         android:id="@+id/id_taken_title"
         android:layout_marginBottom="8dp"
@@ -22,7 +23,7 @@
             android:gravity="center"
             android:text="@string/taken_title"
             android:textSize="32dp"
-            android:textColor="@color/colorWhite"/>
+            android:textColor="@color/colorLightDark"/>
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
@@ -30,8 +31,36 @@
         android:layout_height="match_parent"
         android:id="@+id/id_taken_recycler"
         android:layout_below="@+id/id_taken_title"
+        android:visibility="visible"
+        android:layout_marginBottom="75dp"
+        ></android.support.v7.widget.RecyclerView>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/rl_takengoods_nomore"
+        android:layout_below="@+id/id_taken_title"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        android:layout_marginBottom="75dp"
         >
-    </android.support.v7.widget.RecyclerView>
+        <ImageView
+            android:layout_marginTop="240dp"
+            android:layout_width="360dp"
+            android:layout_height="360dp"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/nores"
+            android:id="@+id/id_takengoods_nores"
+            android:layout_marginBottom="35dp"
+            />
+        <TextView
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:textSize="24dp"
+            android:layout_below="@+id/id_takengoods_nores"
+            android:text="亲，您暂无待取件商品！"
+            android:textAlignment="center"
+            />
+    </RelativeLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -48,16 +77,17 @@
                 android:id="@+id/id_taken_back"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/button_circle_dark"
+                android:background="@drawable/button_circle"
                 android:layout_gravity="center_horizontal"
                 android:textColor="@color/colorLightDark"
                 android:width="100dp"
                 android:height="20dp"
+                style="?android:attr/borderlessButtonStyle"
                 android:text="返回" />
         </RelativeLayout>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#ccc" />
+            android:background="@color/colorFooterDash" />
     </FrameLayout>
 </RelativeLayout>

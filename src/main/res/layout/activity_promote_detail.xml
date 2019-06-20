@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".PromoteDetailActivity"
     android:layout_gravity="center_horizontal"
+    android:background="#fff"
     android:orientation="vertical">
 
     <com.youth.banner.Banner
@@ -41,6 +42,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="3px"
         android:layout_below="@+id/id_detail_sellpoint">
         <TextView
             android:id="@+id/id_detail_price"
@@ -49,7 +51,7 @@
             android:singleLine="true"
             tools:text="¥0.00"
             android:textColor="#f01414"
-            android:textSize="32dp"
+            android:textSize="28dp"
             android:paddingLeft="12dp"
             />
         <TextView
@@ -74,7 +76,7 @@
             android:paddingLeft="25dp"
             android:paddingRight="25dp"
             tools:text="1-20人"
-            android:textColor="#666"
+            android:textColor="#999"
             android:textAlignment="center"
             android:textSize="24dp"
             android:layout_marginLeft="20dp"
@@ -84,27 +86,33 @@
     </LinearLayout>
 
     <FrameLayout
-        android:layout_width="360dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="180dp"
         android:id="@+id/fl_detail_pay"
         >
         <ImageView
-            android:layout_width="match_parent"
+            android:layout_width="360dp"
             android:layout_height="360dp"
             android:id="@+id/id_detail_qrcode"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:layout_gravity="center"
+            android:layout_gravity="left"
+            />
+        <ImageView
+            android:layout_marginLeft="360dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/pc_icon_phon_bg"
+            android:id="@+id/iv_detail_phone"
+            android:layout_gravity="right"
             />
         <TextView
             android:id="@+id/id_detail_tips"
-            android:layout_width="match_parent"
+            android:layout_width="360dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="360dp"
-            android:text="请使用微信扫码参考"
-            android:textSize="20dp"
+            android:text="请使用微信扫码发起拼团"
+            android:textSize="26dp"
             android:textAlignment="center"/>
     </FrameLayout>
 
@@ -112,12 +120,13 @@
         android:id="@+id/id_detail_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_circle_dark"
+        android:background="@drawable/button_circle"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="180dp"
         android:textColor="@color/colorLightDark"
         android:textSize="26dp"
         android:width="300dp"
+        style="?android:attr/borderlessButtonStyle"
         android:height="65dp"
         android:text="返回" />
 

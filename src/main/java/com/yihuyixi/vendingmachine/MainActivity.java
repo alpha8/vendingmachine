@@ -112,18 +112,18 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initSdk() {
-        SdkUtils.getInstance().initialize(getApplicationContext(), mHandler);
+        SdkUtils.getInstance().initialize(getApplicationContext());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        SdkUtils.getInstance().release();
         if (mUnbinder != null) {
             mUnbinder.unbind();
         }
         EventBus.getDefault().removeAllStickyEvents();
         EventBus.getDefault().unregister(this);
-        SdkUtils.getInstance().release();
     }
 
     private void initVideoView() {
@@ -154,7 +154,7 @@ public class MainActivity extends BaseActivity {
             public void run() {
                 Message message = mHandler.obtainMessage();
                 try {
-                    mProductInfos.addAll(Api.getInstance().getGoods(1,AppConstants.PAGE_SIZE));
+                    mProductInfos.addAll(Api.getInstance().getGoods(AppConstants.VENDOR_ID));
                     message.what = AppConstants.FLAG_GOODS;
                     mHandler.sendMessage(message);
                 } catch (NoDataException | AppException e) {
@@ -208,11 +208,18 @@ public class MainActivity extends BaseActivity {
             if (mProductInfos.isEmpty()) {
                 Message message = mHandler.obtainMessage();
                 message.what = AppConstants.FLAG_RELOAD_GOODS;
-                message.obj = Api.getInstance().getGoods(1, AppConstants.PAGE_SIZE);
+                message.obj = Api.getInstance().getGoods(AppConstants.VENDOR_ID);
                 mHandler.sendMessage(message);
             }
         } catch (AppException e) {
             Log.e(TAG_YIHU, "reload goods data encounted exception, message=" + e.getMessage(), e);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void updateStock(EventMessage message) {
+        if (message.getType() == AppConstants.FLAG_UPDATE_STOCK_INFO) {
+            mAdapter.updateItem((ProductInfo) message.getData());
         }
     }
 
@@ -223,7 +230,7 @@ public class MainActivity extends BaseActivity {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_exchange_code, null);
         dialog = new DiyDialog(this, dialogView);
         dialog.setDialogWidth(50);
-        dialog.setDialogHeight(40);
+        dialog.setDialogHeight(32);
         dialog.show();
 
         String vendorId = AppConstants.VENDOR_ID;
@@ -270,18 +277,22 @@ public class MainActivity extends BaseActivity {
 
     @OnClick(R.id.id_help)
     public void doHelp(View view) {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog, null);
-        dialog = new DiyDialog(this, dialogView);
-        dialog.setDialogWidth(50);
-        dialog.setDialogHeight(28);
-        dialog.show();
+//        String deviceId = Utils.getDeviceId(this);
+//        Log.d(TAG_YIHU, "deviceId=" + deviceId);
 
-        TextView confirm = dialogView.findViewById(R.id.id_dialog_confirm);
-        confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        startActivity(new Intent(MainActivity.this, ChannelActivity.class));
+//        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog, null);
+//        dialog = new DiyDialog(this, dialogView);
+//        dialog.setDialogWidth(50);
+//        dialog.setDialogHeight(28);
+//        dialog.show();
+//
+//        TextView confirm = dialogView.findViewById(R.id.id_dialog_confirm);
+//        confirm.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                dialog.dismiss();
+//            }
+//        });
     }
 }

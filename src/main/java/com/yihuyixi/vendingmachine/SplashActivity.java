@@ -3,11 +3,19 @@ package com.yihuyixi.vendingmachine;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Window;
 
+import com.yihuyixi.vendingmachine.api.Api;
+import com.yihuyixi.vendingmachine.bean.DeviceInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
+import com.yihuyixi.vendingmachine.exception.AppException;
+import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.utils.Utils;
+
+import static com.yihuyixi.vendingmachine.constants.AppConstants.TAG_YIHU;
 
 public class SplashActivity extends AppCompatActivity {
     @Override
@@ -17,6 +25,21 @@ public class SplashActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         Utils.fullScreen(getWindow());
         setContentView(R.layout.activity_splash);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    AppConstants.VENDOR_ID = Utils.getDeviceId(getApplicationContext());
+                    DeviceInfo di = Api.getInstance().getDeviceInfo(AppConstants.VENDOR_ID);
+                    if (di != null) {
+                        AppConstants.CURRENT_DEVICE = di;
+                    }
+                } catch (AppException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
