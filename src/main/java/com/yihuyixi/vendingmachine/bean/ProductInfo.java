@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class ProductInfo implements Serializable {
+    private String pid;
     private String id;
     private String name;
     private String avatar;
@@ -15,6 +16,14 @@ public class ProductInfo implements Serializable {
     private String pictureId;
     private int stock;
     private int status;
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
 
     public boolean isSaleoff() {
         return status == 1;
@@ -109,6 +118,7 @@ public class ProductInfo implements Serializable {
     public String toString() {
         return "ProductInfo{" +
                 "id='" + id + '\'' +
+                "pid='" + pid + '\'' +
                 "name='" + name + '\'' +
                 ", avatar='" + avatar + '\'' +
                 ", pictureId='" + pictureId + '\'' +

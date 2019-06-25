@@ -14,6 +14,15 @@ public class VendorResponse implements Serializable {
         private int userId;
         private String userName;
         private String userIcon;
+        private String vendorMsg;
+
+        public String getVendorMsg() {
+            return vendorMsg;
+        }
+
+        public void setVendorMsg(String vendorMsg) {
+            this.vendorMsg = vendorMsg;
+        }
 
         public String getVendorId() {
             return vendorId;

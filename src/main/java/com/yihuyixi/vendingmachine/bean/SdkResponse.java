@@ -115,6 +115,10 @@ public class SdkResponse implements Serializable {
         return "未知异常";
     }
 
+    public boolean isSuccess() {
+        return "28".equals(getCode()) && "00".equals(getStatus());
+    }
+
     @Override
     public String toString() {
         return "SdkResponse{" +

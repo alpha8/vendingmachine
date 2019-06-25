@@ -35,6 +35,12 @@ public class PayTimeoutTask extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
+    public void renewTimes() {
+        if (!this.isStop) {
+            SECONDS = AppConstants.PAY_TIMEOUT_SECONDS;
+        }
+    }
+
     public void cancelJob() {
         this.isStop = true;
     }

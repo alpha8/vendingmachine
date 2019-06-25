@@ -19,6 +19,7 @@ import com.yihuyixi.vendingmachine.vo.ExtGoodsResponse;
 import com.yihuyixi.vendingmachine.vo.OrderResponse;
 import com.yihuyixi.vendingmachine.vo.PayVO;
 import com.yihuyixi.vendingmachine.vo.PictureInfo;
+import com.yihuyixi.vendingmachine.vo.PromoteGoodsVO;
 import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.yihuyixi.vendingmachine.vo.ResponseVO;
 import com.yihuyixi.vendingmachine.vo.VendorOrderResponse;
@@ -44,6 +45,9 @@ public class Api {
     private static final String TAKEN_SUCCESS_URL = AppConstants.CMS_API + "/vendor/pickSuccess";
     private static final String QUERY_DEVICEINFO_URL = AppConstants.OSS_API + "/device/get/";
     private static final String STOCK_OUT_URL = AppConstants.OSS_API + "/stock/out";
+    private static final String QUERY_SINGLE_ORDER_URL = AppConstants.OSS_API + "/preorder/getAllOrder";
+    private static final String TAKEN_ERROR_URL = AppConstants.OSS_API + "/channel/deliverFail";
+    private static final String QUERY_PROMOTE_GOODS_URL = AppConstants.BASE_API + "/webspread/specialfield/get/";
 
     private static final String CONTENT_TYPE = "contentType";
     private static final String JSON_TYPE = "application/json; charset=utf-8";
@@ -73,10 +77,37 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = response.body().string();
             Log.d(AppConstants.TAG_YIHU, "takenSuccess response:" + result);
             VendorOrderResponse resp = JSON.parseObject(result, VendorOrderResponse.class);
             return resp.getResult() == 0;
+        }catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public ProductInfo takenError(String json) throws AppException {
+        Log.d(AppConstants.TAG_YIHU, "takenError params: " + json);
+        RequestBody body = RequestBody.create(MediaType.parse(JSON_TYPE), json);
+        Request request = new Request.Builder().url(TAKEN_ERROR_URL)
+                .addHeader("Connection", "close")
+                .post(body)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
+            String result = response.body().string();
+            Log.d(AppConstants.TAG_YIHU, "takenError response:" + result);
+            ChannelResponse resp = JSON.parseObject(result, ChannelResponse.class);
+            if (resp.getResult() == 0) {
+                return resp.getData();
+            }
+            return null;
         }catch(IOException e) {
             throw new AppException("网络异常，请稍候再试！", e);
         }
@@ -98,6 +129,9 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = "";
             try {
                 result = response.body().string();
@@ -124,6 +158,9 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = response.body().string();
             VendorResponse resp = JSON.parseObject(result, VendorResponse.class);
             if (resp.getResult() == 0) {
@@ -144,9 +181,54 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = response.body().string();
             ResponseEntity resp = JSON.parseObject(result, ResponseEntity.class);
             if (resp.getResult() == 0 && AppConstants.PAY_SUCCESS.equalsIgnoreCase(resp.getData().getTrade_state())) {
+                return resp.getData();
+            }
+            return null;
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public PromoteGoodsVO getPromoteGoodsDetail(String pid) throws AppException {
+        String url = QUERY_PROMOTE_GOODS_URL + pid;
+        Log.d(AppConstants.TAG_YIHU, String.format("getPromoteGoodsDetail url=%s", url));
+        Request request = new Request.Builder().url(url)
+                .addHeader("Connection", "close")
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
+            String result = response.body().string();
+            return JSON.parseObject(result, PromoteGoodsVO.class);
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public PayVO getOrderDetail(String pid) throws AppException {
+        String url = String.format("%s?pid=%s&deviceId=%s", QUERY_SINGLE_ORDER_URL, pid, AppConstants.VENDOR_ID);
+        Log.d(AppConstants.TAG_YIHU, String.format("getOrderDetail url=%s", url));
+        Request request = new Request.Builder().url(url)
+                .addHeader("Connection", "close")
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
+            String result = response.body().string();
+            ResponseEntity resp = JSON.parseObject(result, ResponseEntity.class);
+            if (resp.getResult() == 0) {
                 return resp.getData();
             }
             return null;
@@ -164,6 +246,9 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = response.body().string();
             ResponseEntity resp = JSON.parseObject(result, ResponseEntity.class);
             Log.d(AppConstants.TAG_YIHU, "getWxPay response:" + resp.toString());
@@ -195,6 +280,9 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = "";
             try {
                 result = response.body().string();
@@ -224,6 +312,9 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = "";
             try {
                 result = response.body().string();
@@ -244,6 +335,9 @@ public class Api {
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = "";
             try {
                 result = response.body().string();
@@ -274,7 +368,7 @@ public class Api {
             List<PictureInfo> pictures = artwork.getPictures();
             if (pictures != null && !pictures.isEmpty()) {
                 p.setPictureId(pictures.get(0).getId());
-                String urlFormat = "%s/%s?w=750&h=500&v=v2";
+                String urlFormat = "%s/%s?w=1080&h=720";
                 p.setAvatar(String.format(urlFormat, AppConstants.PS_API, pictures.get(0).getId()));
                 List<String> pics = new ArrayList<>();
                 for (PictureInfo pic: pictures) {
@@ -296,6 +390,9 @@ public class Api {
         Log.d(AppConstants.TAG_YIHU, String.format("getDeviceInfo url=%s", url));
         try {
             Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             String result = response.body().string();
             DeviceInfoResponse resp = JSON.parseObject(result, DeviceInfoResponse.class);
             if (resp.getResult() == 0) {
@@ -317,9 +414,12 @@ public class Api {
         try {
             Response response = client.newCall(request).execute();
             String result = response.body().string();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
             ChannelResponse resp = JSON.parseObject(result, ChannelResponse.class);
             if (resp.getResult() == 0 && resp.getData() != null) {
-                return resp.getData().getProduct();
+                return resp.getData();
             }
             return null;
         } catch(IOException e) {

@@ -122,6 +122,7 @@ public class ChannelUtils {
                     c.setLevel("A"+(i+1));
                     int cid = i*10+j;
                     c.setChannelId(cid);
+                    c.setChannelName("A" + cid);
                     setPostion(c,position,cid);
                     position++;
                     channels.add(c);
@@ -132,6 +133,7 @@ public class ChannelUtils {
                 c.setSide("A");
                 c.setLevel("A"+(i+1));
                 c.setChannelId(39);
+                c.setChannelName("A39");
                 setPostion(c,position,39);
                 position++;
                 channels.add(c);
@@ -140,6 +142,7 @@ public class ChannelUtils {
                 c.setSide("A");
                 c.setLevel("A"+(i+1));
                 c.setChannelId(48);
+                c.setChannelName("A48");
                 setPostion(c,position,48);
                 position++;
                 channels.add(c);
@@ -147,6 +150,7 @@ public class ChannelUtils {
                 c.setSide("A");
                 c.setLevel("A"+(i+1));
                 c.setChannelId(47);
+                c.setChannelName("A47");
                 setPostion(c,position,47);
                 position++;
                 channels.add(c);
@@ -175,6 +179,7 @@ public class ChannelUtils {
                             break;
                     }
                     c.setChannelId(cid);
+                    c.setChannelName(c.getSide()+ cid);
                     setPostion(c,position,cid);
                     position++;
                     channels.add(c);

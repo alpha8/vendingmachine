@@ -12,15 +12,18 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.adapter.TakenGoodsAdapter;
 import com.yihuyixi.vendingmachine.api.Api;
-import com.yihuyixi.vendingmachine.api.Channels;
 import com.yihuyixi.vendingmachine.bean.OrderInfo;
+import com.yihuyixi.vendingmachine.bean.SdkResponse;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.message.EventMessage;
 import com.yihuyixi.vendingmachine.sdk.SdkUtils;
+import com.yihuyixi.vendingmachine.vo.PayVO;
+import com.yihuyixi.vendingmachine.vo.PromoteGoodsVO;
 import com.yihuyixi.vendingmachine.vo.VendorResponse;
 
 import org.greenrobot.eventbus.EventBus;
@@ -67,6 +70,7 @@ public class TakenGoodsActivity extends BaseActivity {
         mUserVO = (VendorResponse.VendorUser) getIntent().getSerializableExtra(AppConstants.INTENT_TAKEN_DEVICE);
         Log.d(AppConstants.TAG_YIHU, mUserVO.toString());
         this.fetchGoodsData();
+        AppConstants.LAST_PICK_CODE = "";
     }
 
     private void initRecyclerView(List<OrderInfo> list) {
@@ -88,32 +92,68 @@ public class TakenGoodsActivity extends BaseActivity {
             public void onItemClick(View view, int position) {
                 Log.d(TAG_YIHU, "onItemClick position=" + position);
                 OrderInfo orderInfo = list.get(position);
+                if (orderInfo.getVendor() != null) {
+                    AppConstants.LAST_PICK_CODE = String.valueOf(orderInfo.getVendor().getPickCode());
+                }
                 mTakenGoodsAdapter.removeItem(orderInfo, position);
                 EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_TAKEN_ORDERS, orderInfo));
             }
         });
     }
 
+    private String mOrderNo = "";
     @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
     public void doTakenAction(EventMessage event) {
         if (event.getType() == AppConstants.FLAG_TAKEN_ORDERS) {
+            AppConstants.LAST_SHIPMENT_LEVEL = "";
             try {
                 OrderInfo orderInfo = (OrderInfo) event.getData();
-                String json = String.format("{\"orderNo\": \"%s\"}", orderInfo.getOrderNo());
-                boolean isSuccess = Api.getInstance().takenSuccess(json);
-                if (isSuccess) {
-                    String outChannel = Channels.getInstance().getRandomChannel();
-                    SdkUtils.getInstance().checkout(Integer.parseInt(outChannel.substring(1)));
-                    Intent intent = new Intent(TakenGoodsActivity.this, TakenSuccessActivity.class);
-                    intent.putExtra(AppConstants.INTENT_TAKEN_DEVICE, mUserVO);
-                    startActivity(intent);
-                    this.finish();
+                if (orderInfo.getType() == 100 || orderInfo.getProducts() == null) {
+                    return;
+                }
+                // 拼团和砍价订单, 通过拼团和砍价的id查询详情，得到待出货的产品ID
+                PromoteGoodsVO goodsVO = Api.getInstance().getPromoteGoodsDetail(orderInfo.getProducts().get(0).getId());
+                PayVO payVO = Api.getInstance().getOrderDetail(goodsVO.getArtworkId());
+                Log.d(TAG_YIHU, "doTakenAction payVO=" + payVO);
+                if (payVO != null && payVO.getChannelNo() != null) {
+                    AppConstants.LAST_SHIPMENT_LEVEL = payVO.getLevel();
+                    mOrderNo = orderInfo.getOrderNo();
+                    int channelNo  = Integer.parseInt(payVO.getChannelNo());
+                    if (mUserVO != null) {
+                        String deliveryMsg = String.format("支付成功！请从%s柜拿取货物。", payVO.getLevel().substring(0, 1));
+                        mUserVO.setVendorMsg(deliveryMsg);
+                    }
+                    SdkUtils.getInstance().checkout(payVO.getPlc(), channelNo, channelNo);
                 } else {
-                    Toast.makeText(TakenGoodsActivity.this, "取货失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(TakenGoodsActivity.this, "商品已售罄！请稍候再来！", Toast.LENGTH_SHORT).show();
                 }
             } catch (AppException e) {
                 Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
                 Toast.makeText(TakenGoodsActivity.this, "网络异常，请稍后再试！", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
+    public void deliverySucceed(EventMessage message) {
+        if (message.getType() == AppConstants.FLAG_SDK_SUCCESS && !AppConstants.IS_DEVICE_CHECKING) {
+            SdkResponse response = (SdkResponse) message.getData();
+            Log.d(AppConstants.TAG_YIHU, "TakenGoodsActivity deliverySucceed SDK response=" + response.getMessage());
+            if (response.getType() == WMSSendType.SHIPMENTS && response.isSuccess()) {
+                String json = String.format("{\"orderNo\": \"%s\"}", mOrderNo);
+                try {
+                    boolean isSuccess = Api.getInstance().takenSuccess(json);
+                    if (isSuccess) {
+                        Intent intent = new Intent(TakenGoodsActivity.this, TakenSuccessActivity.class);
+                        intent.putExtra(AppConstants.INTENT_TAKEN_DEVICE, mUserVO);
+                        startActivity(intent);
+                        this.finish();
+                    } else {
+                        Toast.makeText(TakenGoodsActivity.this, "取货失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (AppException e) {
+                    Log.e(TAG_YIHU, e.getMessage(), e);
+                }
             }
         }
     }

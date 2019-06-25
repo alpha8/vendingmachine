@@ -4,8 +4,9 @@ import com.yihuyixi.vendingmachine.bean.DeviceInfo;
 
 public final class AppConstants {
     public static final String BASE_API = "http://www.yihuyixi.com";
+    public static final String CDN_BASE_API = "http://imgcdn.yihuyixi.com";
     public static final String CMS_API = BASE_API + "/cms";
-    public static final String PS_API = BASE_API + "/ps/download";
+    public static final String PS_API = CDN_BASE_API + "/ps/download";
     public static final String WX_API = BASE_API + "/wxservice";
     public static final String OSS_API = BASE_API + "/oss";
     public static final String SPECIAL_GOODS_API = BASE_API + "/webspread";
@@ -18,6 +19,7 @@ public final class AppConstants {
     public static final int FLAG_SDK_INIT_FAIL = 1001;
     public static final int FLAG_SDK_SUCCESS = 1100;
     public static final int FLAG_SDK_FAIL = 1101;
+    public static final int FLAG_NETWORK_ERROR = 9999;
 
     public static final int FLAG_UPDATE_COUNTDOWN = 6;
     public static final int FLAG_CLOSE_DETAIL = 7;
@@ -28,6 +30,7 @@ public final class AppConstants {
 
     public static final int FLAG_DETAIL_QRCODE_URL = 200;
     public static final int FLAG_DETAIL_BANNER = 201;
+    public static final int FLAG_UPDATE_DEVICE_INFO = 8888;
 
     public static final int FLAG_TAKEN_SUCCESS = 300;
     public static final int FLAG_TAKEN_FAIL = 301;
@@ -44,9 +47,14 @@ public final class AppConstants {
 
     public static final String TAG_YIHU = "YiHuYiXiApp";
 
-    public static final long SPLASH_DELAY_TIME = 1000L;
+    public static final long SPLASH_DELAY_TIME = 3000L;
     public static final int PAGE_SIZE = 80;
 
     public static String VENDOR_ID = "";
     public static DeviceInfo CURRENT_DEVICE = null;
+    public static boolean IS_DEVICE_CHECKING = false;
+
+    public static String LAST_SHIPMENT_LEVEL = "";
+    public static String LAST_PREORDER_ID = "";
+    public static String LAST_PICK_CODE = "";
 }

@@ -14,6 +14,10 @@ android {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
         }
+        manifestPlaceholders = [GETUI_APP_ID: "BTssTBEqkT615ACRVV0GT9", GETUI_APP_KEY: "zLIDKnDxLCA2f5F67rJfC", GETUI_APP_SECRET: "ZGgE0nTvPa9SeTzjnAWSu3"]
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86_64", "x86"
+        }
     }
     buildTypes {
         release {
@@ -35,6 +39,7 @@ dependencies {
     implementation 'com.alibaba:fastjson:1.2.44'
     implementation 'org.greenrobot:eventbus:3.1.1'
     implementation 'com.jakewharton:butterknife:8.0.0'
+    implementation 'com.getui:sdk:2.13.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.0.0'
 
     testImplementation 'junit:junit:4.12'

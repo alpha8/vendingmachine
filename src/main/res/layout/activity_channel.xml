@@ -1,44 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ChannelActivity"
-    android:background="#ccc">
+    android:background="#fff">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="top|center_horizontal">
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="自动检测"
-            android:onClick="checkAuto"
-            android:shadowRadius="@android:integer/config_mediumAnimTime"
-            android:id="@+id/btnCheckAuto"/>
-        <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="停止检测"
-        android:onClick="checkStop"
-        android:shadowRadius="@android:integer/config_mediumAnimTime"
-        android:id="@+id/btnCheckStop"/>
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:layout_gravity="center">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="自动检测"
+                android:onClick="checkAuto"
+                android:shadowRadius="@android:integer/config_mediumAnimTime"
+                android:id="@+id/btnCheckAuto"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="停止检测"
+                android:onClick="checkStop"
+                android:shadowRadius="@android:integer/config_mediumAnimTime"
+                android:layout_toRightOf="@id/btnCheckAuto"
+                android:id="@+id/btnCheckStop"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:layout_gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="下位机："
+                android:id="@+id/id_channel_addr_label"
+                android:gravity="center"/>
+            <EditText
+                android:layout_width="80dp"
+                android:layout_height="50dp"
+                android:id="@+id/id_channel_address"
+                android:text="0"
+                android:textAlignment="center"
+                android:layout_toRightOf="@id/id_channel_addr_label"
+                />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
                 android:text="货道号："
+                android:layout_marginLeft="20dp"
                 android:id="@+id/id_channel_label"
+                android:layout_toRightOf="@id/id_channel_address"
                 android:gravity="center"/>
             <EditText
-                android:layout_width="300dp"
+                android:layout_width="90dp"
                 android:layout_height="50dp"
                 android:id="@+id/id_channel_num"
+                android:textAlignment="center"
                 android:layout_toRightOf="@id/id_channel_label"
                 />
             <Button
@@ -46,7 +74,7 @@
                 android:layout_height="50dp"
                 android:layout_toRightOf="@id/id_channel_num"
                 android:id="@+id/id_channel_btn"
-                style="?android:attr/borderlessButtonStyle"
+                android:shadowRadius="@android:integer/config_mediumAnimTime"
                 android:text="出货"/>
         </RelativeLayout>
         <TextView
@@ -69,6 +97,35 @@
             android:verticalSpacing="6dp"
             android:gravity="center"
             android:fadeScrollbars="true"
+            android:background="#f2f2f2"
             />
     </LinearLayout>
-</LinearLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="15dp"
+            android:gravity="right|center_vertical"
+            android:background="@color/colorCommonFooter">
+            <Button
+                android:id="@+id/id_channel_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_circle"
+                android:text="返回"
+                android:textColor="@color/colorLightDark"
+                android:width="150dp"
+                android:height="20dp"
+                style="?android:attr/borderlessButtonStyle"
+                />
+        </RelativeLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorFooterDash" />
+    </FrameLayout>
+</RelativeLayout>

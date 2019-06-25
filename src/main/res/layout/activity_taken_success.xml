@@ -22,6 +22,16 @@
             android:layout_gravity="center"
             android:src="@mipmap/outbound"
             />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_takensuccess_msg"
+            tools:text="取货提示"
+            android:textAlignment="center"
+            android:textSize="24dp"
+            android:layout_marginTop="450dp"
+            android:layout_gravity="center_horizontal"></TextView>
     </FrameLayout>
 
     <RelativeLayout

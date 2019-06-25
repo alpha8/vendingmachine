@@ -17,16 +17,14 @@ import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.api.Api;
-import com.yihuyixi.vendingmachine.api.Channels;
 import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
 import com.yihuyixi.vendingmachine.asynctask.PayTimeoutTask;
-import com.yihuyixi.vendingmachine.bean.ChannelResponse;
+import com.yihuyixi.vendingmachine.bean.ChannelRequest;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.bean.SdkResponse;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.message.EventMessage;
-import com.yihuyixi.vendingmachine.sdk.SdkUtils;
 import com.yihuyixi.vendingmachine.vo.QrcodeVO;
 import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.youth.banner.Banner;
@@ -55,18 +53,23 @@ public class GoodsDetailActivity extends BaseActivity {
     @BindView(R.id.fl_paySuccess) FrameLayout mPaySuccessLayout;
 
     private ProductInfo mProductInfo;
-
     private OrderPayStateTask mPayStateTask;
     private PayTimeoutTask mTimeoutTask;
+    private String mPaySuccessMsg;
+
     private Unbinder mUnbinder;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch(msg.what) {
                 case AppConstants.FLAG_PAY_SUCCESS:
+                    mPaySuccessMsg = (String)msg.obj;
                     mPayLayout.setVisibility(View.GONE);
                     mPaySuccessLayout.setVisibility(View.VISIBLE);
-                    mTvMsg.setText((String)msg.obj);
+                    mTvMsg.setText("出货中，请稍候...");
+                    if (mTimeoutTask != null) {
+                        mTimeoutTask.renewTimes();
+                    }
                     break;
                 case AppConstants.FLAG_PAY_FAIL:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
@@ -195,26 +198,14 @@ public class GoodsDetailActivity extends BaseActivity {
         EventBus.getDefault().unregister(this);
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void deliverySucceed(EventMessage message) {
-        if (message.getType() == AppConstants.FLAG_SDK_SUCCESS) {
+        if (message.getType() == AppConstants.FLAG_SDK_SUCCESS && !AppConstants.IS_DEVICE_CHECKING) {
             SdkResponse response = (SdkResponse) message.getData();
-            if (response.getType() == WMSSendType.SHIPMENTS) {
-                String orderNo = response.getRealOrderNo();
-                ChannelResponse.ChannelVO channelVO = new ChannelResponse.ChannelVO();
-                channelVO.setChannelNo(orderNo);
-                channelVO.setDeviceId(AppConstants.VENDOR_ID);
-                channelVO.setCount(1);
-                String json = JSON.toJSONString(channelVO);
-                try {
-                    ProductInfo pi = Api.getInstance().stockOut(json);
-                    Log.d(AppConstants.TAG_YIHU, "stock out response=" + pi);
-                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_STOCK_INFO, pi));
-                } catch (AppException e) {
-                    e.printStackTrace();
-                }
+            if (response.getType() == WMSSendType.SHIPMENTS && response.isSuccess()) {
+                mTvMsg.setText(mPaySuccessMsg);
             } else {
-                //todo: 异常出货，上报服务端处理
+                mTvMsg.setText("抱歉，商品已售罄！货款已自动退还到您的支付账户！");
             }
         }
     }

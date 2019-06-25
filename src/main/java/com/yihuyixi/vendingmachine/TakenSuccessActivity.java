@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.vo.VendorResponse;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
@@ -15,6 +17,7 @@ import butterknife.Unbinder;
 public class TakenSuccessActivity extends BaseActivity {
     private Unbinder mUnbinder;
     private VendorResponse.VendorUser mVendorUser;
+    @BindView(R.id.id_takensuccess_msg) TextView mTakenTips;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +26,10 @@ public class TakenSuccessActivity extends BaseActivity {
         mUnbinder = ButterKnife.bind(this);
 
         mVendorUser = (VendorResponse.VendorUser) getIntent().getSerializableExtra(AppConstants.INTENT_TAKEN_DEVICE);
-        Log.d(AppConstants.TAG_YIHU, mVendorUser.toString());
+        if (mVendorUser != null && mVendorUser.getVendorMsg() != null) {
+            Log.d(AppConstants.TAG_YIHU, mVendorUser.toString());
+            mTakenTips.setText(mVendorUser.getVendorMsg());
+        }
     }
 
     @Override

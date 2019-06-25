@@ -1,10 +1,18 @@
 package com.yihuyixi.vendingmachine.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.util.Log;
+import android.view.View;
 import android.widget.VideoView;
 
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.yihuyixi.vendingmachine.MainActivity;
+import com.yihuyixi.vendingmachine.SplashActivity;
+import com.yihuyixi.vendingmachine.constants.AppConstants;
+import com.youth.banner.Banner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,19 +37,28 @@ public class VideoUtils {
         return instance;
     }
 
-    public void playNextVideo(final VideoView videoView) {
+    private volatile boolean exchangeBanner = false;
+    public void playNextVideo(final VideoView videoView, final Banner mBanner) {
+        Log.d(AppConstants.TAG_YIHU, "exchange to play video.");
         videoView.setVideoPath(getNextVideo());
         videoView.start();
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mPlayer) {
-                playNextVideo(videoView);
+                exchangeBanner = !exchangeBanner;
+                if (exchangeBanner) {
+                    exchangeBanner(videoView, mBanner);
+                } else {
+                    mBanner.setVisibility(View.GONE);
+                    videoView.setVisibility(View.VISIBLE);
+                    playNextVideo(videoView, mBanner);
+                }
             }
         });
         videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                videoView.stopPlayback(); //播放异常，则停止播放，防止弹窗使界面阻塞
+                exchangeBanner(videoView, mBanner); //播放异常，则停止播放，防止弹窗使界面阻塞
                 return true;
             }
         });
@@ -52,6 +69,22 @@ public class VideoUtils {
                 mp.setVolume(1f, 1f);   // volume range: 0-1
             }
         });
+    }
+
+    private void exchangeBanner(VideoView videoView, Banner mBanner) {
+        Log.d(AppConstants.TAG_YIHU, "exchange to banner.");
+        videoView.stopPlayback();
+        videoView.setVisibility(View.GONE);
+        mBanner.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(AppConstants.TAG_YIHU, "play banner timeout, start to exchagne.");
+                mBanner.setVisibility(View.GONE);
+                videoView.setVisibility(View.VISIBLE);
+                playNextVideo(videoView, mBanner);
+            }
+        }, 10000);
     }
 
     private String getNextVideo() {

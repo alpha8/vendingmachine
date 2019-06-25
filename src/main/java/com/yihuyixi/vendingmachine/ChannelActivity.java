@@ -43,10 +43,11 @@ public class ChannelActivity extends BaseActivity {
     LayoutInflater inflater;
     int i = 0;
     volatile boolean flag = false;
-    volatile  boolean isAutoRun = false;
+    volatile boolean isAutoRun = false;
     boolean isBack = false;
     Unbinder mBinder;
     @BindView(R.id.id_channel_num) EditText mChannelNo;
+    @BindView(R.id.id_channel_address) EditText mAddress;
     @BindView(R.id.id_channel_btn) Button mButton;
 
     @Override
@@ -82,6 +83,7 @@ public class ChannelActivity extends BaseActivity {
         Log.d("Button", "checkAuto" );
         try{
             isAutoRun = true;
+            AppConstants.IS_DEVICE_CHECKING = true;
             Toast.makeText(this,"第"+i+"个串口",Toast.LENGTH_SHORT);
 //            WMSerialportManager.setShipments(0, 8, 0, 15 * 1000);
             SdkUtils.getInstance().checkout(8, 0);
@@ -146,6 +148,8 @@ public class ChannelActivity extends BaseActivity {
         if (mBinder != null) {
             mBinder.unbind();
         }
+        isAutoRun = false;
+        AppConstants.IS_DEVICE_CHECKING = false;
         EventBus.getDefault().removeAllStickyEvents();
         EventBus.getDefault().unregister(this);
     }
@@ -153,9 +157,20 @@ public class ChannelActivity extends BaseActivity {
     @OnClick(R.id.id_channel_btn)
     public void handleDelivery(View view) {
         String channelNo = mChannelNo.getText().toString();
+        String address = mAddress.getText().toString();
+        if (address == null || "".equals(address)) {
+            address = "0";
+        }
         if (channelNo != null && !"".equals(channelNo)) {
             mButton.setEnabled(false);
-            SdkUtils.getInstance().checkout(Integer.parseInt(channelNo.toString()));
+            AppConstants.IS_DEVICE_CHECKING = true;
+            SdkUtils.getInstance().checkout(Integer.parseInt(address), Integer.parseInt(channelNo.toString()), SdkUtils.OrderIdGenerator.getNewOrderId());
         }
+    }
+
+
+    @OnClick(R.id.id_channel_back)
+    public void goBack(View view) {
+        this.finish();
     }
 }

@@ -29,13 +29,14 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
+                    // TODO: 模拟机测试时启用 "867223025692567";
                     AppConstants.VENDOR_ID = Utils.getDeviceId(getApplicationContext());
                     DeviceInfo di = Api.getInstance().getDeviceInfo(AppConstants.VENDOR_ID);
                     if (di != null) {
                         AppConstants.CURRENT_DEVICE = di;
                     }
                 } catch (AppException e) {
-                    e.printStackTrace();
+                    Log.e(TAG_YIHU, e.getMessage(), e);
                 }
             }
         }).start();

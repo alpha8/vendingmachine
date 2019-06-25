@@ -74,7 +74,8 @@ public class SdkUtils {
     @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
     public void deliveryFailed(EventMessage message) {
         if (message.getType() == AppConstants.FLAG_SDK_FAIL) {
-            Log.d(AppConstants.TAG_YIHU, message.getMessage());
+            SdkResponse response = (SdkResponse) message.getData();
+            Log.d(AppConstants.TAG_YIHU, response.getMessage());
         }
     }
 
@@ -89,7 +90,12 @@ public class SdkUtils {
         WMSerialportManager.setShipments(0, channelId, orderId, 15 * 1000);
     }
 
-    private static final class OrderIdGenerator {
+    public void checkout(int address, int channelId, long orderId){
+        Log.i(AppConstants.TAG_YIHU, String.format("准备出货中, 下位机地址：%d, 货架号：%d, 订单号：%s", address, channelId, orderId));
+        WMSerialportManager.setShipments(address, channelId, orderId, 15 * 1000);
+    }
+
+    public static final class OrderIdGenerator {
         private static long orderId;
 
         public static synchronized long getNewOrderId() {

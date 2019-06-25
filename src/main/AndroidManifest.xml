@@ -10,6 +10,10 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <application
         android:allowBackup="true"
@@ -17,8 +21,20 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".TakenSuccessActivity"></activity>
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <service
+            android:name=".service.AppIntentService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false">
+        </service>
+        <service
+            android:name=".service.AppPushService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":pushservice"></service>
+
+        <activity android:name=".TakenSuccessActivity" />
         <activity android:name=".TakenGoodsActivity" />
         <activity android:name=".PromoteDetailActivity" />
         <activity android:name=".ListActivity" />

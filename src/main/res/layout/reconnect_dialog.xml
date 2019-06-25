@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="30dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/reconnect_tips"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:textSize="28dp"
+        android:gravity="center"
+        android:layout_margin="6dp"
+        android:layout_centerInParent="true"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="重新加载"
+        android:gravity="center"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:textSize="22dp"
+        android:textColor="#fff"
+        android:background="@drawable/blue_button_circle"
+        android:id="@+id/id_reconnect_dialog_confirm"
+        />
+
+</RelativeLayout>

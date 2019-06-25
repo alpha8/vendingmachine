@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import com.yihuyixi.vendingmachine.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -71,7 +73,7 @@ public class TakenGoodsAdapter extends RecyclerView.Adapter<TakenGoodsAdapter.Ta
 
     protected void setItemEvent(@NonNull final TakenViewHolder holder) {
         if (mOnItemClickListener != null) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
+            holder.btnDeposit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int pos = holder.getLayoutPosition();
@@ -107,6 +109,7 @@ public class TakenGoodsAdapter extends RecyclerView.Adapter<TakenGoodsAdapter.Ta
         @BindView(R.id.id_takengoods_name) TextView name;
         @BindView(R.id.id_takengoods_code) TextView code;
         @BindView(R.id.id_takengoods_time) TextView createAt;
+        @BindView(R.id.id_takengoods_btn)  TextView btnDeposit;
 
         public TakenViewHolder(@NonNull View view) {
             super(view);

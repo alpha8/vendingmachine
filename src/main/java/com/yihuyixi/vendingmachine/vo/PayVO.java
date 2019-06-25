@@ -7,6 +7,24 @@ public class PayVO implements Serializable {
     private String trade_state;
     private String trade_no;
     private String channelNo;
+    private String level;
+    private int plc;
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public int getPlc() {
+        return plc;
+    }
+
+    public void setPlc(int plc) {
+        this.plc = plc;
+    }
 
     public String getChannelNo() {
         return channelNo;
@@ -46,6 +64,8 @@ public class PayVO implements Serializable {
                 "id='" + id + '\'' +
                 ", trade_state='" + trade_state + '\'' +
                 ", trade_no='" + trade_no + '\'' +
+                ", plc='" + plc + '\'' +
+                ", level='" + level + '\'' +
                 ", channelNo='" + channelNo + '\'' +
                 '}';
     }

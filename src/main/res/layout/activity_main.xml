@@ -8,10 +8,6 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <!--<com.youth.banner.Banner-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="320dp"-->
-        <!--android:id="@+id/mbanner"/>-->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="640dp"
@@ -25,6 +21,12 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentBottom="true" />
+        <com.youth.banner.Banner
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/id_main_banner"
+            android:visibility="gone"
+            />
     </RelativeLayout>
 
     <GridView
@@ -49,6 +51,7 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
+        android:id="@+id/fl_main_footer"
         >
         <RelativeLayout
             android:layout_width="match_parent"

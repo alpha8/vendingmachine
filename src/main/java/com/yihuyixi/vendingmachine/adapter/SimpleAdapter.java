@@ -96,17 +96,18 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
         this.notifyItemInserted(pos);
     }
     public void updateItem(ProductInfo p) {
-        int pos = -1;
+        if (p == null || p.getPid() == null) {
+            return;
+        }
         for(int i=0; i<mDatas.size(); i++) {
             ProductInfo pi = mDatas.get(i);
-            if (pi.getId() == p.getId()) {
+            if (pi.getId().equals(p.getPid())) {
+                Log.d(AppConstants.TAG_YIHU, "found product=" + p.getPid());
                 pi.setStatus(p.getStatus());
-                pi.setStatus(p.getStock());
-                pos = i;
+                this.notifyItemChanged(i, pi);
                 break;
             }
         }
-        this.notifyItemChanged(pos);
     }
 
     public List<ProductInfo> getDatas() {
