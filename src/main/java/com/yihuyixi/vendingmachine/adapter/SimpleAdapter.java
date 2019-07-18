@@ -1,6 +1,7 @@
 package com.yihuyixi.vendingmachine.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,6 +12,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yihuyixi.vendingmachine.R;
 import com.yihuyixi.vendingmachine.bean.ProductInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
@@ -58,7 +63,17 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
         holder.sellPoint.setText(product.getSellpoint());
         holder.price.setText(String.format("¥%s", product.getFormatPrice()));
         holder.sellCount.setText(String.format("(已售%d件)", product.getSellCount()));
-        Glide.with(context).load(product.getAvatar()).into(holder.avatar);
+        Glide.with(context)
+                .load(product.getAvatar())
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
+                .into(new SimpleTarget<GlideDrawable>() {
+            @Override
+            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                if (resource != null) {
+                    holder.avatar.setImageDrawable(resource);
+                }
+            }
+        });
         if (product.isSaleoff()) {
             holder.salesOff.setVisibility(View.VISIBLE);
         } else {

@@ -35,6 +35,7 @@
                 android:maxLines="2"
                 android:id="@+id/id_takengoods_name"
                 tools:text="商品名称"
+                android:textColor="@color/colorProductName"
                 android:textSize="26dp"
                 />
             <TextView

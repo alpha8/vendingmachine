@@ -15,6 +15,11 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.asynctask.OrderPayStateTask;
@@ -51,6 +56,7 @@ public class GoodsDetailActivity extends BaseActivity {
     @BindView(R.id.btn_back) Button mBackButton;
     @BindView(R.id.fl_pay) FrameLayout mPayLayout;
     @BindView(R.id.fl_paySuccess) FrameLayout mPaySuccessLayout;
+    @BindView(R.id.iv_successIcon) ImageView mPayImage;
 
     private ProductInfo mProductInfo;
     private OrderPayStateTask mPayStateTask;
@@ -112,7 +118,17 @@ public class GoodsDetailActivity extends BaseActivity {
         mBanner.setImageLoader(new ImageLoader() {
             @Override
             public void displayImage(Context context, Object path, ImageView imageView) {
-                Glide.with(GoodsDetailActivity.this).load(path).into(imageView);
+                Glide.with(GoodsDetailActivity.this)
+                        .load(path)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
+                        .into(new SimpleTarget<GlideDrawable>() {
+                            @Override
+                            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                if (resource != null) {
+                                    imageView.setImageDrawable(resource);
+                                }
+                            }
+                        });
             }
         });
         mBanner.setImages(icons);
@@ -136,8 +152,9 @@ public class GoodsDetailActivity extends BaseActivity {
         qrcode.setName(mProductInfo.getName());
         qrcode.setIcon(mProductInfo.getPictureId());
         qrcode.setProductId(mProductInfo.getId());
-//        qrcode.setPrice(mProductInfo.getPrice());
-        qrcode.setPrice(0.01f);
+        qrcode.setPrice(mProductInfo.getPrice());
+        // TODO: 上生产环境时，需要将价格还原到真实价格
+//        qrcode.setPrice(0.01f);
         qrcode.setVendingId(AppConstants.VENDOR_ID);
 
         try {
@@ -147,7 +164,16 @@ public class GoodsDetailActivity extends BaseActivity {
                 @Override
                 public void run() {
                     String qrcodeUrl = String.format("%s/getQrcode?url=%s", AppConstants.WX_API, responseEntity.getUrl());
-                    Glide.with(GoodsDetailActivity.this).load(qrcodeUrl).into(mQrcode);
+                    Glide.with(GoodsDetailActivity.this).load(qrcodeUrl).priority(Priority.HIGH)
+                            .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                            .into(new SimpleTarget<GlideDrawable>() {
+                                @Override
+                                public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                    if (resource != null) {
+                                        mQrcode.setImageDrawable(resource);
+                                    }
+                                }
+                            });
                     mPayLayout.setVisibility(View.VISIBLE);
 
                     mTimeoutTask = new PayTimeoutTask(mHandler,"返回（%s秒）");
@@ -204,9 +230,11 @@ public class GoodsDetailActivity extends BaseActivity {
             SdkResponse response = (SdkResponse) message.getData();
             if (response.getType() == WMSSendType.SHIPMENTS && response.isSuccess()) {
                 mTvMsg.setText(mPaySuccessMsg);
+                mPayImage.setImageResource(R.drawable.outbound);
             } else {
-                mTvMsg.setText("抱歉，商品已售罄！货款已自动退还到您的支付账户！");
+                mPayImage.setImageResource(R.drawable.outbound_error);
             }
+            mPayImage.setVisibility(View.VISIBLE);
         }
     }
 }

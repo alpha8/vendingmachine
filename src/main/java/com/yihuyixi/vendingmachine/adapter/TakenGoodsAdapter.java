@@ -13,6 +13,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yihuyixi.vendingmachine.R;
 import com.yihuyixi.vendingmachine.bean.OrderInfo;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
@@ -66,7 +70,17 @@ public class TakenGoodsAdapter extends RecyclerView.Adapter<TakenGoodsAdapter.Ta
         }
         holder.createAt.setText(String.format("下单时间: %s", Utils.getFormatDate(orderInfo.getCreateAt())));
         if (orderInfo.getProducts() != null && !orderInfo.getProducts().isEmpty()) {
-            Glide.with(mContext).load(Utils.getPictureServerUrl(orderInfo.getProducts().get(0).getIcon())).into(holder.icon);
+            Glide.with(mContext)
+                    .load(Utils.getPictureServerUrl(orderInfo.getProducts().get(0).getIcon()))
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
+                    .into(new SimpleTarget<GlideDrawable>() {
+                @Override
+                public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                    if (resource != null) {
+                        holder.icon.setImageDrawable(resource);
+                    }
+                }
+            });
         }
         setItemEvent(holder);
     }

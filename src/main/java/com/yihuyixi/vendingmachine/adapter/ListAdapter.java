@@ -12,6 +12,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yihuyixi.vendingmachine.R;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.utils.Utils;
@@ -74,7 +78,17 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ListViewHolder
             }
         }
         holder.tips.setText(tips);
-        Glide.with(context).load(Utils.getPictureServerUrl(product.getIcon())).into(holder.avatar);
+        Glide.with(context)
+                .load(Utils.getPictureServerUrl(product.getIcon()))
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
+                .into(new SimpleTarget<GlideDrawable>() {
+            @Override
+            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                if (resource != null) {
+                    holder.avatar.setImageDrawable(resource);
+                }
+            }
+        });
         setItemEvent(holder);
     }
 

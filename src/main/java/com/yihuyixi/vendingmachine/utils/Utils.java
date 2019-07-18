@@ -2,7 +2,9 @@ package com.yihuyixi.vendingmachine.utils;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -12,8 +14,18 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 
+import com.alibaba.fastjson.util.IOUtils;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
+import com.yihuyixi.vendingmachine.exception.AppException;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -92,7 +104,174 @@ public class Utils {
         return UUID.randomUUID().toString();
     }
 
-    private static boolean isNotBlank(String str) {
+    public static String getImei(Context context) throws AppException {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(AppConstants.TAG_YIHU, "READ_PHONE_STATE has permission.");
+            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            String imei = tm.getDeviceId();
+            if (isNotBlank(imei)) {
+                Log.d(AppConstants.TAG_YIHU, "imei=" + imei);
+                return imei;
+            }
+        }
+        throw new AppException("获取IMEI号失败！");
+    }
+
+    public static boolean isNotBlank(String str) {
         return str != null && !"".equals(str);
+    }
+
+    public static boolean isBlank(String str) {
+        return str == null || "".equals(str);
+    }
+
+    /**
+     * 描述: 安装
+     */
+    public static boolean installApk(File apkPath,Context context){
+        // 先判断手机是否有root权限
+        if(hasRootPerssion()){
+            Log.d(AppConstants.TAG_YIHU, "has root permission.");
+            // 有root权限，利用静默安装实现
+            return clientInstall(apkPath.getAbsolutePath(), context);
+        }else{
+            // 没有root权限，利用意图进行安装
+            Log.d(AppConstants.TAG_YIHU, "has no root permission.");
+            if(!apkPath.exists())
+                return false;
+            Log.d(AppConstants.TAG_YIHU, "start to install");
+            Intent intent = new Intent();
+            intent.setAction("android.intent.action.VIEW");
+            intent.addCategory("android.intent.category.DEFAULT");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setDataAndType(Uri.fromFile(apkPath),"application/vnd.android.package-archive");
+            context.startActivity(intent);
+            return true;
+        }
+    }
+
+    /**
+     * 描述: 卸载
+     */
+    public static boolean uninstall(String packageName,Context context){
+        if(hasRootPerssion()){
+            // 有root权限，利用静默卸载实现
+            return clientUninstall(packageName);
+        }else{
+            Uri packageURI = Uri.parse("package:" + packageName);
+            Intent uninstallIntent = new Intent(Intent.ACTION_DELETE,packageURI);
+            uninstallIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(uninstallIntent);
+            return true;
+        }
+    }
+
+    /**
+     * 判断手机是否有root权限
+     */
+    public static boolean hasRootPerssion(){
+        PrintWriter PrintWriter = null;
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec("su");
+            PrintWriter = new PrintWriter(process.getOutputStream());
+            PrintWriter.flush();
+            PrintWriter.close();
+            int value = process.waitFor();
+            return returnResult(value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally{
+            if(process!=null){
+                process.destroy();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 静默安装
+     */
+    public static boolean clientInstall(String apkPath,Context context){
+        PrintWriter PrintWriter = null;
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec("su");
+            PrintWriter = new PrintWriter(process.getOutputStream());
+            PrintWriter.println("chmod 777 "+apkPath);
+            PrintWriter.println("export LD_LIBRARY_PATH=/vendor/lib:/system/lib");
+            PrintWriter.println("pm install -r "+apkPath);
+//          PrintWriter.println("exit");
+            PrintWriter.flush();
+            PrintWriter.close();
+            int value = process.waitFor();
+            return returnResult(value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally{
+            if(process!=null){
+                process.destroy();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 静默卸载
+     */
+    public static boolean clientUninstall(String packageName){
+        PrintWriter PrintWriter = null;
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec("su");
+            PrintWriter = new PrintWriter(process.getOutputStream());
+            PrintWriter.println("LD_LIBRARY_PATH=/vendor/lib:/system/lib ");
+            PrintWriter.println("pm uninstall "+packageName);
+            PrintWriter.flush();
+            PrintWriter.close();
+            int value = process.waitFor();
+            return returnResult(value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally{
+            if(process!=null){
+                process.destroy();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 启动app
+     * com.exmaple.client/.MainActivity
+     * com.exmaple.client/com.exmaple.client.MainActivity
+     */
+    public static boolean startApp(String packageName,String activityName){
+        boolean isSuccess = false;
+        String cmd = "am start -n " + packageName + "/" + activityName + " \n";
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(cmd);
+            int value = process.waitFor();
+            return returnResult(value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally{
+            if(process!=null){
+                process.destroy();
+            }
+        }
+        return isSuccess;
+    }
+
+    private static boolean returnResult(int value){
+        // 代表成功
+        if (value == 0) {
+            return true;
+        } else if (value == 1) { // 失败
+            return false;
+        } else { // 未知情况
+            return false;
+        }
     }
 }

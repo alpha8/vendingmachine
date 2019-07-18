@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:gravity="top|center_horizontal"
+    android:background="#fff"
+    android:layout_height="match_parent">
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="75dp"
+        android:focusable="false"
+        android:id="@+id/id_admin_listview">
+    </ListView>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/fl_admin_footer"
+        >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="15dp"
+            android:gravity="right|center_vertical"
+            android:background="@color/colorCommonFooter">
+            <Button
+                android:id="@+id/id_admin_channel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_circle"
+                android:layout_marginRight="10dp"
+                android:width="100dp"
+                android:height="20dp"
+                android:textColor="@color/colorLightDark"
+                style="?android:attr/borderlessButtonStyle"
+                android:text="货道检测" />
+            <Button
+                android:id="@+id/id_admin_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_circle"
+                android:text="@string/back_button"
+                android:textColor="@color/colorLightDark"
+                android:width="100dp"
+                android:height="20dp"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_toRightOf="@id/id_admin_channel"
+                />
+        </RelativeLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorFooterDash" />
+    </FrameLayout>
+</RelativeLayout>

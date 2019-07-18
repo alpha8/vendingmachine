@@ -11,7 +11,6 @@ public class Artwork {
     private String sellPoint;
     private int salesCount;
     private int status;
-    private int stock;
 
     public int getStatus() {
         return status;
@@ -19,14 +18,6 @@ public class Artwork {
 
     public void setStatus(int status) {
         this.status = status;
-    }
-
-    public int getStock() {
-        return stock;
-    }
-
-    public void setStock(int stock) {
-        this.stock = stock;
     }
 
     public float getOldPrice() {

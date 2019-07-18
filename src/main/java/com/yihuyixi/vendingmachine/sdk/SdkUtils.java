@@ -66,9 +66,13 @@ public class SdkUtils {
     }
 
     public void release() {
-        WMSerialportManager.closeSerialPort();
-        EventBus.getDefault().removeAllStickyEvents();
-        EventBus.getDefault().unregister(this);
+        try {
+            EventBus.getDefault().removeAllStickyEvents();
+            EventBus.getDefault().unregister(this);
+            WMSerialportManager.closeSerialPort();
+        } catch(Throwable e) {
+            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+        }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="ProductName"
-            android:textColor="#000"
+            android:textColor="@color/colorProductName"
             android:textSize="32dp"
             android:paddingLeft="12dp"
             android:paddingTop="10dp"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="Sellpoint"
-            android:textColor="#999"
+            android:textColor="@color/colorSellpoint"
             android:textSize="28dp"
             android:layout_below="@+id/tv_name"
             android:paddingLeft="12dp"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="¥0.00"
-            android:textColor="#f01414"
+            android:textColor="@color/colorPrice"
             android:textSize="32dp"
             android:paddingLeft="12dp"
             />
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="(已售10件)"
-            android:textColor="#999"
+            android:textColor="@color/colorSellpoint"
             android:textSize="28dp"
             android:layout_marginLeft="8dp"
             android:layout_toRightOf="@+id/tv_price"
@@ -94,7 +94,7 @@
             android:layout_width="360dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="360dp"
-            android:text="请使用微信扫码支付"
+            android:text="@string/use_wx_pay"
             android:textSize="20dp"
             android:textAlignment="center"/>
     </FrameLayout>
@@ -111,8 +111,10 @@
             android:layout_width="360dp"
             android:layout_height="360dp"
             android:id="@+id/iv_successIcon"
-            android:src="@mipmap/outbound"
-            android:layout_gravity="center" />
+            android:src="@drawable/outbound"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -138,6 +140,6 @@
         android:width="300dp"
         android:height="65dp"
         style="?android:attr/borderlessButtonStyle"
-        android:text="返回" />
+        android:text="@string/back_button" />
 
 </LinearLayout>

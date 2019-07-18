@@ -14,19 +14,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.igexin.sdk.PushManager;
+import com.tencent.bugly.crashreport.CrashReport;
 import com.yihuyixi.vendingmachine.adapter.GridItem;
 import com.yihuyixi.vendingmachine.adapter.GridViewAdapter;
+import com.yihuyixi.vendingmachine.adapter.KeyboardAdapter;
 import com.yihuyixi.vendingmachine.adapter.SimpleAdapter;
 import com.yihuyixi.vendingmachine.api.Api;
+import com.yihuyixi.vendingmachine.api.DownloadListener;
 import com.yihuyixi.vendingmachine.asynctask.NotakenCheckTask;
 import com.yihuyixi.vendingmachine.bean.ChannelRequest;
 import com.yihuyixi.vendingmachine.bean.DeviceInfo;
@@ -41,10 +46,13 @@ import com.yihuyixi.vendingmachine.message.EventMessage;
 import com.yihuyixi.vendingmachine.sdk.SdkUtils;
 import com.yihuyixi.vendingmachine.service.AppIntentService;
 import com.yihuyixi.vendingmachine.service.AppPushService;
+import com.yihuyixi.vendingmachine.utils.DeviceUtils;
 import com.yihuyixi.vendingmachine.utils.NetUtils;
+import com.yihuyixi.vendingmachine.utils.Utils;
 import com.yihuyixi.vendingmachine.utils.VideoUtils;
 import com.yihuyixi.vendingmachine.view.DiyDialog;
 import com.yihuyixi.vendingmachine.vo.VendorResponse;
+import com.yihuyixi.vendingmachine.vo.VersionResponse;
 import com.youth.banner.Banner;
 import com.youth.banner.loader.ImageLoader;
 
@@ -52,6 +60,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -91,7 +100,7 @@ public class MainActivity extends BaseActivity {
                     break;
                 case AppConstants.FLAG_NO_DATA:
                     initialized = false;
-                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_NETWORK_ERROR));
+                    mRecyclerView.setVisibility(View.GONE);
                     break;
                 case AppConstants.FLAG_SDK_FAIL:
 //                    Toast.makeText(MainActivity.this, "出货失败，请联系客服处理售后问题！", Toast.LENGTH_LONG).show();
@@ -111,8 +120,16 @@ public class MainActivity extends BaseActivity {
         this.initVideoView();
         this.initSdk();
         this.initPromoteView();
-        fetchGoodsData();
         this.initBanner();
+        this.initData();
+    }
+
+    private void initData() {
+        if (Utils.isBlank(AppConstants.VENDOR_ID)) {
+            EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_DEVICE_INFO));
+        } else {
+            fetchGoodsData();
+        }
     }
 
 
@@ -149,7 +166,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initSdk() {
-        SdkUtils.getInstance().initialize(getApplicationContext());
+        try {
+            SdkUtils.getInstance().initialize(getApplicationContext());
+        } catch(Throwable e) {
+            Toast.makeText(getApplicationContext(), "售卖机SDK加载失败", Toast.LENGTH_LONG);
+        }
     }
 
     @Override
@@ -170,6 +191,7 @@ public class MainActivity extends BaseActivity {
     private void initRecyclerView() {
         initialized = true;
         mAdapter = new SimpleAdapter(getApplicationContext(), mProductInfos);
+        mRecyclerView.setVisibility(View.VISIBLE);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setFocusable(false);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -195,7 +217,7 @@ public class MainActivity extends BaseActivity {
                         firstOffset = ((GridLayoutManager) layoutManager).findFirstVisibleItemPosition();
                     }
 //                    Log.d(TAG_YIHU, "firstOffset=" + firstOffset + ", lastOffset=" + lastOffset);
-                    if (lastOffset > 9) {
+                    if (firstOffset > 0){
                         mGridView.setVisibility(View.GONE);
                     } else {
                         mGridView.setVisibility(View.VISIBLE);
@@ -217,10 +239,12 @@ public class MainActivity extends BaseActivity {
                     mProductInfos.addAll(Api.getInstance().getGoods(AppConstants.VENDOR_ID));
                     message.what = AppConstants.FLAG_GOODS;
                     mHandler.sendMessage(message);
-                } catch (NoDataException | AppException e) {
+                } catch (NoDataException e) {
                     Log.e(TAG_YIHU, "fetchGoodsData encounted exception, message=" + e.getMessage(), e);
                     message.what = AppConstants.FLAG_NO_DATA;
                     mHandler.sendMessage(message);
+                } catch (AppException e) {
+                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_NETWORK_ERROR));
                 }
             }
         }).start();
@@ -262,7 +286,7 @@ public class MainActivity extends BaseActivity {
     public void notifyNetChanged(NetUtils.NetworkType type) {
         super.notifyNetChanged(type);
         if (type != NetUtils.NetworkType.none) {
-            if ("".equals(AppConstants.VENDOR_ID)) {
+            if (Utils.isBlank(AppConstants.VENDOR_ID) || AppConstants.CURRENT_DEVICE == null) {
                 EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_DEVICE_INFO));
             } else {
                 EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_RELOAD_GOODS));
@@ -277,15 +301,21 @@ public class MainActivity extends BaseActivity {
         }
         Log.d(TAG_YIHU, "reloadProducts event=" + event.toString());
         try {
+            if (Utils.isBlank(AppConstants.VENDOR_ID)) {
+                AppConstants.VENDOR_ID = Utils.getImei(getApplicationContext());
+            }
             Message message = mHandler.obtainMessage();
             message.what = AppConstants.FLAG_RELOAD_GOODS;
             message.obj = Api.getInstance().getGoods(AppConstants.VENDOR_ID);
             mHandler.sendMessage(message);
-        } catch (NoDataException | AppException e) {
+        } catch (NoDataException e) {
             Log.e(TAG_YIHU, "reload goods data encounted exception, message=" + e.getMessage(), e);
             Message message = mHandler.obtainMessage();
             message.what = AppConstants.FLAG_NO_DATA;
             mHandler.sendMessage(message);
+        } catch(AppException e) {
+            Log.e(TAG_YIHU, "AppException, caused by " + e.getMessage(), e);
+            EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_NETWORK_ERROR));
         }
     }
 
@@ -302,16 +332,15 @@ public class MainActivity extends BaseActivity {
     public void updateDeviceInfo(EventMessage message) {
         if (message.getType() == AppConstants.FLAG_UPDATE_DEVICE_INFO) {
             try {
+                AppConstants.VENDOR_ID = Utils.getImei(getApplicationContext());
                 DeviceInfo di = Api.getInstance().getDeviceInfo(AppConstants.VENDOR_ID);
-                if (di == null) {
-                    return;
+                if (di != null) {
+                    AppConstants.CURRENT_DEVICE = di;
                 }
-                AppConstants.CURRENT_DEVICE = di;
-                if (!"".equals(AppConstants.VENDOR_ID)) {
-                    EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_RELOAD_GOODS));
-                }
+                EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_RELOAD_GOODS));
             } catch (AppException e) {
                 Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+                EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_NETWORK_ERROR));
             }
         }
     }
@@ -425,10 +454,8 @@ public class MainActivity extends BaseActivity {
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (initialized) {
-                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_RELOAD_GOODS));
-                }
                 dialog.dismiss();
+                EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_RELOAD_GOODS));
             }
         });
     }
@@ -438,12 +465,12 @@ public class MainActivity extends BaseActivity {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog, null);
         dialog = new DiyDialog(this, dialogView);
         dialog.setDialogWidth(50);
-        dialog.setDialogHeight(10);
+        dialog.setDialogHeight(33);
         dialog.show();
 
         if (AppConstants.CURRENT_DEVICE != null) {
             TextView content = dialogView.findViewById(R.id.id_dialog_content);
-            content.setText(AppConstants.CURRENT_DEVICE.getServiceNo());
+            content.setText("客服热线：" + AppConstants.CURRENT_DEVICE.getServiceNo());
         }
         TextView confirm = dialogView.findViewById(R.id.id_dialog_confirm);
         confirm.setOnClickListener(new View.OnClickListener() {
@@ -457,14 +484,104 @@ public class MainActivity extends BaseActivity {
     private long[] hints = new long[10];
     @OnTouch(R.id.fl_main_footer)
     public boolean enterAdminUI(View view, MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
             System.arraycopy(hints, 1, hints, 0, hints.length - 1);
             hints[hints.length - 1] = SystemClock.uptimeMillis();
             if (SystemClock.uptimeMillis() - hints[0] <= 3000) {
                 Log.d(TAG_YIHU, "enterAdminUI");
-                startActivity(new Intent(MainActivity.this, ChannelActivity.class));
+
+                View dialogView = LayoutInflater.from(this).inflate(R.layout.login_dialog, null);
+                dialog = new DiyDialog(this, dialogView);
+                dialog.setDialogWidth(100);
+                dialog.setDialogHeight(28);
+                dialog.setDialogGravity(DiyDialog.DiyDialogGravity.GRAVITY_BOTTOM);
+                dialog.setCanceledOnTouchOutside(true);
+                dialog.show();
+
+                EditText passwordTxt = dialogView.findViewById(R.id.id_login_pwd);
+                KeyboardAdapter keyboardAdapter = new KeyboardAdapter(this);
+                GridView gridView = dialogView.findViewById(R.id.id_login_keyboard);
+                gridView.setAdapter(keyboardAdapter);
+                gridView.setFocusable(false);
+                keyboardAdapter.setOnItemClickListener(new KeyboardAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(String type, String num) {
+                        if (Utils.isBlank(type) || Utils.isBlank(num)) {
+                            return;
+                        }
+                        switch(type) {
+                            case "num":
+                                passwordTxt.append(num);
+                                break;
+                            case "clear":
+                                passwordTxt.setText("");
+                                break;
+                            case "back":
+                                String text = passwordTxt.getText().toString();
+                                if (Utils.isNotBlank(text)) {
+                                    passwordTxt.setText(text.substring(0, text.length() - 1));
+                                }
+                                break;
+                        }
+                        String password = passwordTxt.getText().toString().trim();
+                        if (AppConstants.CURRENT_DEVICE != null && password.equals(AppConstants.CURRENT_DEVICE.getManagerPwd())) {
+                            startActivity(new Intent(MainActivity.this, AdminActivity.class));
+                        } else if (AppConstants.CURRENT_DEVICE == null && "979899".equals(password)){
+                            startActivity(new Intent(MainActivity.this, AdminActivity.class));
+                        }
+                    }
+                });
             }
         }
         return true;
+    }
+
+    private DownloadListener mDownloadListener = new DownloadListener() {
+        @Override
+        public void onProgress(final long writeBytes, final long contentLength) {
+//            Log.d(TAG_YIHU, String.format("onProgress, %s / %s", writeBytes, contentLength));
+        }
+
+        @Override
+        public void onComplete(File outFile) {
+            Log.d(TAG_YIHU, "onComplete");
+            Utils.installApk(outFile, getApplicationContext());
+        }
+
+        @Override
+        public void onError(String message) {
+            Toast.makeText(getApplicationContext(), "升级失败，稍候请再试!", Toast.LENGTH_LONG).show();
+        }
+    };
+    @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
+    public void showUpdateDialog(EventMessage message) {
+        if (message.getType() != AppConstants.FLAG_UPGRADE_APP) {
+            return;
+        }
+        try {
+            VersionResponse.VersionVO versionVO = Api.getInstance().getDownloadInfo(message.getMessage());
+            if (versionVO != null) {
+                Log.d(TAG_YIHU, "download info: " + versionVO);
+                Api.getInstance().downloadFile(versionVO.getUrl(), mDownloadListener);
+            }
+        } catch (AppException e) {
+            Log.e(TAG_YIHU, e.getMessage(), e);
+        }
+    }
+
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
+    public void installSuccess(EventMessage message) {
+        if (message.getType() != AppConstants.FLAG_INSTALL_SUCCESS) {
+            return;
+        }
+        try {
+            String json = String.format("{\"deviceId\": \"%s\", \"versionCode\": \"%s\"}",
+                    Utils.getDeviceId(getApplicationContext()),
+                    DeviceUtils.getVersionCode(getApplicationContext()));
+            Api.getInstance().installSuccess(json);
+        } catch (AppException e) {
+            Log.e(TAG_YIHU, e.getMessage(), e);
+        }
     }
 }

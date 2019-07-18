@@ -83,7 +83,7 @@
                 android:width="100dp"
                 android:height="20dp"
                 style="?android:attr/borderlessButtonStyle"
-                android:text="返回" />
+                android:text="@string/back_button" />
         </RelativeLayout>
         <View
             android:layout_width="match_parent"

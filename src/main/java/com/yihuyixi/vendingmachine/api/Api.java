@@ -1,8 +1,10 @@
 package com.yihuyixi.vendingmachine.api;
 
+import android.os.Environment;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.util.IOUtils;
 import com.yihuyixi.vendingmachine.bean.ChannelResponse;
 import com.yihuyixi.vendingmachine.bean.DeviceInfo;
 import com.yihuyixi.vendingmachine.bean.GoodsType;
@@ -24,11 +26,18 @@ import com.yihuyixi.vendingmachine.vo.ResponseEntity;
 import com.yihuyixi.vendingmachine.vo.ResponseVO;
 import com.yihuyixi.vendingmachine.vo.VendorOrderResponse;
 import com.yihuyixi.vendingmachine.vo.VendorResponse;
+import com.yihuyixi.vendingmachine.vo.VersionResponse;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -43,11 +52,13 @@ public class Api {
     private static final String QUERY_GOODS_API_URL = AppConstants.BASE_API + "/yihu/artwork/";
     private static final String QUERY_ORDERS_API_URL = AppConstants.CMS_API + "/order/list";
     private static final String TAKEN_SUCCESS_URL = AppConstants.CMS_API + "/vendor/pickSuccess";
-    private static final String QUERY_DEVICEINFO_URL = AppConstants.OSS_API + "/device/get/";
+    private static final String QUERY_DEVICEINFO_URL = AppConstants.OSS_API + "/device/get?deviceId=";
     private static final String STOCK_OUT_URL = AppConstants.OSS_API + "/stock/out";
     private static final String QUERY_SINGLE_ORDER_URL = AppConstants.OSS_API + "/preorder/getAllOrder";
     private static final String TAKEN_ERROR_URL = AppConstants.OSS_API + "/channel/deliverFail";
     private static final String QUERY_PROMOTE_GOODS_URL = AppConstants.BASE_API + "/webspread/specialfield/get/";
+    private static final String QUERY_DOWNLOAD_INFO_URL = AppConstants.OSS_API + "/appversion/get?versionCode=";
+    private static final String INSTALL_SUCCESS_URL = AppConstants.OSS_API + "/appversion/install/success";
 
     private static final String CONTENT_TYPE = "contentType";
     private static final String JSON_TYPE = "application/json; charset=utf-8";
@@ -55,7 +66,11 @@ public class Api {
     private static Api instance = new Api();
 
     private Api() {
-        client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
+        client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(20, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .build();
     }
 
     public static Api getInstance() {
@@ -364,7 +379,6 @@ public class Api {
             p.setSellCount(artwork.getSalesCount());
             p.setSellpoint(artwork.getSellPoint());
             p.setStatus(artwork.getStatus());
-            p.setStock(artwork.getStock());
             List<PictureInfo> pictures = artwork.getPictures();
             if (pictures != null && !pictures.isEmpty()) {
                 p.setPictureId(pictures.get(0).getId());
@@ -383,7 +397,7 @@ public class Api {
 
     public DeviceInfo getDeviceInfo(String deviceId) throws AppException {
         String url = QUERY_DEVICEINFO_URL + deviceId;
-        Request request = new Request.Builder().url(QUERY_DEVICEINFO_URL)
+        Request request = new Request.Builder().url(url)
                 .addHeader("Connection", "close")
                 .addHeader(CONTENT_TYPE, JSON_TYPE)
                 .build();
@@ -425,5 +439,82 @@ public class Api {
         } catch(IOException e) {
             throw new AppException("网络异常，请稍候再试！", e);
         }
+    }
+
+    public VersionResponse.VersionVO getDownloadInfo(String versionCode) throws AppException {
+        String url = QUERY_DOWNLOAD_INFO_URL + versionCode;
+        Request request = new Request.Builder().url(url)
+                .addHeader("Connection", "close")
+                .addHeader(CONTENT_TYPE, JSON_TYPE)
+                .build();
+        Log.d(AppConstants.TAG_YIHU, String.format("getDownloadInfo url=%s", url));
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new AppException("网络异常，请稍候再试！");
+            }
+            String result = response.body().string();
+            VersionResponse resp = JSON.parseObject(result, VersionResponse.class);
+            if (resp.getResult() == 0) {
+                return resp.getData();
+            }
+            return null;
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public boolean installSuccess(String json) throws AppException {
+        RequestBody body = RequestBody.create(MediaType.parse(JSON_TYPE), json);
+        Request request = new Request.Builder().url(INSTALL_SUCCESS_URL)
+                .addHeader("Connection", "close")
+                .post(body)
+                .build();
+        Log.d(AppConstants.TAG_YIHU, String.format("installSuccess url=%s, json=%s", STOCK_OUT_URL, json));
+        try {
+            Response response = client.newCall(request).execute();
+            String result = response.body().string();
+            Log.d(AppConstants.TAG_YIHU, "the result of installSuccess = " + result);
+            return response.isSuccessful();
+        } catch(IOException e) {
+            throw new AppException("网络异常，请稍候再试！", e);
+        }
+    }
+
+    public void downloadFile(String resourceUrl, DownloadListener listener) {
+        Request request = new Request.Builder().get().url(resourceUrl).build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                listener.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                long total = response.body().contentLength();   //total filesize
+                long sum = 0;
+                byte[] buf = new byte[256];
+                InputStream is = response.body().byteStream();
+                File outFile = new File(Environment.getExternalStorageDirectory() + "/Android/data/com.yihuyixi.vendingmachine", "update.apk");
+                if (outFile.exists()) {
+                    outFile.delete();
+                }
+                FileOutputStream fos = new FileOutputStream(outFile);
+                try {
+                    int len = 0;
+                    while ((len = is.read(buf)) != -1) {
+                        fos.write(buf, 0, len);
+                        sum += len;
+                        listener.onProgress(sum, total);
+                    }
+                    fos.flush();
+                } finally {
+                    IOUtils.close(fos);
+                    IOUtils.close(is);
+                }
+                listener.onComplete(outFile);
+            }
+        });
     }
 }

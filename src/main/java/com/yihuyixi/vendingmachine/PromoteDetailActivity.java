@@ -13,6 +13,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yihuyixi.vendingmachine.api.Api;
 import com.yihuyixi.vendingmachine.asynctask.PayTimeoutTask;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
@@ -82,7 +87,17 @@ public class PromoteDetailActivity extends BaseActivity{
         mBanner.setImageLoader(new ImageLoader() {
             @Override
             public void displayImage(Context context, Object path, ImageView imageView) {
-                Glide.with(PromoteDetailActivity.this).load(path).into(imageView);
+                Glide.with(PromoteDetailActivity.this)
+                        .load(path)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
+                        .into(new SimpleTarget<GlideDrawable>() {
+                            @Override
+                            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                if (resource != null) {
+                                    imageView.setImageDrawable(resource);
+                                }
+                            }
+                        });
             }
         });
         mBanner.setImages(icons);
@@ -135,7 +150,18 @@ public class PromoteDetailActivity extends BaseActivity{
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Glide.with(PromoteDetailActivity.this).load(qrcodeUrl).into(mQrcode);
+                Glide.with(PromoteDetailActivity.this)
+                        .load(qrcodeUrl)
+                        .priority(Priority.HIGH)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(new SimpleTarget<GlideDrawable>() {
+                            @Override
+                            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                if (resource != null) {
+                                    mQrcode.setImageDrawable(resource);
+                                }
+                            }
+                        });
                 mTimeoutTask = new PayTimeoutTask(mHandler,"返回（%s秒）");
                 mTimeoutTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }

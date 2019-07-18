@@ -14,4 +14,8 @@
     <color name="colorBlack">#000000</color>
     <color name="colorCommonFooter">#F3F1F1</color>
     <color name="colorFooterDash">#DEDEDE</color>
+    <color name="colorProductName">#383838</color>
+    <color name="colorSellpoint">#999</color>
+    <color name="colorPrice">#f01414</color>
+    <color name="colorOldPrice">#ccc</color>
 </resources>

@@ -19,7 +19,6 @@ public final class AppConstants {
     public static final int FLAG_SDK_INIT_FAIL = 1001;
     public static final int FLAG_SDK_SUCCESS = 1100;
     public static final int FLAG_SDK_FAIL = 1101;
-    public static final int FLAG_NETWORK_ERROR = 9999;
 
     public static final int FLAG_UPDATE_COUNTDOWN = 6;
     public static final int FLAG_CLOSE_DETAIL = 7;
@@ -30,11 +29,14 @@ public final class AppConstants {
 
     public static final int FLAG_DETAIL_QRCODE_URL = 200;
     public static final int FLAG_DETAIL_BANNER = 201;
-    public static final int FLAG_UPDATE_DEVICE_INFO = 8888;
 
     public static final int FLAG_TAKEN_SUCCESS = 300;
     public static final int FLAG_TAKEN_FAIL = 301;
     public static final int FLAG_TAKEN_ORDERS = 400;
+    public static final int FLAG_UPDATE_DEVICE_INFO = 8888;
+    public static final int FLAG_UPGRADE_APP = 8000;
+    public static final int FLAG_INSTALL_SUCCESS = 8200;
+    public static final int FLAG_NETWORK_ERROR = 500;
 
     public static final String INTENT_GOODS = "goodsinfo";
     public static final String INTENT_SECTION = "section";

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center">
+    <FrameLayout
+        android:layout_width="600dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/id_login_input">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/input_admin_pwd"
+            android:id="@+id/id_login_label"
+            android:gravity="center"
+            android:textSize="24dp"
+            android:paddingTop="50dp"
+            />
+
+        <EditText
+            android:layout_width="350dp"
+            android:layout_height="50dp"
+            android:lineHeight="50dp"
+            android:text=""
+            android:id="@+id/id_login_pwd"
+            android:layout_gravity="center_horizontal"
+            android:textSize="24dp"
+            android:layout_marginTop="100dp"
+            android:textAlignment="center"
+            android:background="@drawable/bg_white_gray_border"
+            android:inputType="numberPassword"
+            android:focusable="false"
+            android:imeOptions="actionNone"
+            />
+    </FrameLayout>
+
+    <GridView
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="30dp"
+        android:numColumns="3"
+        android:columnWidth="120dp"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="10dp"
+        android:stretchMode="columnWidth"
+        android:id="@+id/id_login_keyboard"
+        android:background="@drawable/bg_white_gray_border"
+        android:layout_toRightOf="@id/id_login_input"></GridView>
+</RelativeLayout>

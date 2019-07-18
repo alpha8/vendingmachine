@@ -1,7 +1,6 @@
 package com.yihuyixi.vendingmachine.utils;
 
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.util.Log;
@@ -9,8 +8,6 @@ import android.view.View;
 import android.widget.VideoView;
 
 import com.danikula.videocache.HttpProxyCacheServer;
-import com.yihuyixi.vendingmachine.MainActivity;
-import com.yihuyixi.vendingmachine.SplashActivity;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.youth.banner.Banner;
 
@@ -39,47 +36,55 @@ public class VideoUtils {
 
     private volatile boolean exchangeBanner = false;
     public void playNextVideo(final VideoView videoView, final Banner mBanner) {
-        Log.d(AppConstants.TAG_YIHU, "exchange to play video.");
-        videoView.setVideoPath(getNextVideo());
-        videoView.start();
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mPlayer) {
-                exchangeBanner = !exchangeBanner;
-                if (exchangeBanner) {
-                    exchangeBanner(videoView, mBanner);
-                } else {
-                    mBanner.setVisibility(View.GONE);
-                    videoView.setVisibility(View.VISIBLE);
-                    playNextVideo(videoView, mBanner);
+        try {
+            videoView.setVideoPath(getNextVideo());
+            videoView.start();
+            videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mPlayer) {
+                    exchangeBanner = !exchangeBanner;
+                    if (exchangeBanner) {
+                        exchangeBanner(videoView, mBanner);
+                    } else {
+                        mBanner.setVisibility(View.GONE);
+                        videoView.setVisibility(View.VISIBLE);
+                        playNextVideo(videoView, mBanner);
+                    }
                 }
-            }
-        });
-        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                exchangeBanner(videoView, mBanner); //播放异常，则停止播放，防止弹窗使界面阻塞
-                return true;
-            }
-        });
-        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.start();
-                mp.setVolume(1f, 1f);   // volume range: 0-1
-            }
-        });
+            });
+            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    exchangeBanner(videoView, mBanner); //播放异常，则停止播放，防止弹窗使界面阻塞
+                    return true;
+                }
+            });
+            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    try {
+                        mp.start();
+                        mp.setVolume(1f, 1f);   // volume range: 0-1
+                    } catch (Exception e) {
+                        Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+                        exchangeBanner(videoView, mBanner);
+                    }
+                }
+            });
+        } catch(Throwable e) {
+            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+            exchangeBanner = true;
+            exchangeBanner(videoView, mBanner);
+        }
     }
 
     private void exchangeBanner(VideoView videoView, Banner mBanner) {
-        Log.d(AppConstants.TAG_YIHU, "exchange to banner.");
         videoView.stopPlayback();
         videoView.setVisibility(View.GONE);
         mBanner.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Log.d(AppConstants.TAG_YIHU, "play banner timeout, start to exchagne.");
                 mBanner.setVisibility(View.GONE);
                 videoView.setVisibility(View.VISIBLE);
                 playNextVideo(videoView, mBanner);

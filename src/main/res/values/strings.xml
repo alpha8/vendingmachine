@@ -4,4 +4,15 @@
     <string name="taken_title">待取商品列表</string>
     <string name="taken_button">立即取货</string>
     <string name="reconnect_tips">网络不给力哦，请检查网络后重试!</string>
+    <string name="pickup_code_button">取货码</string>
+    <string name="help_button">帮助</string>
+    <string name="back_button">返回</string>
+    <string name="next_pickup_button">继续取件</string>
+    <string name="back_home_button">返回首页</string>
+    <string name="got_it_button">知道了</string>
+    <string name="self_service_button">公众号自助服务</string>
+    <string name="wx_pickup_button">微信扫码取货</string>
+    <string name="use_wx_pay">请使用微信扫码支付</string>
+    <string name="input_admin_pwd">请输入管理员密码：</string>
+    <string name="reload_button">重新加载</string>
 </resources>

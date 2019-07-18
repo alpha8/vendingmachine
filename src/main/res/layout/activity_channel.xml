@@ -39,6 +39,7 @@
             android:focusableInTouchMode="true"
             android:layout_marginTop="20dp"
             android:gravity="center"
+            android:id="@+id/rl_channel_form"
             android:layout_gravity="center">
             <TextView
                 android:layout_width="wrap_content"

@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/id_code_tips"
         android:layout_marginBottom="15dp"
-        android:text="微信扫码取货"
+        android:text="@string/wx_pickup_button"
         android:textSize="26dp"
         android:textAlignment="center"/>
     <ImageView
@@ -32,7 +32,7 @@
         android:textSize="26dp"
         android:width="300dp"
         android:height="65dp"
-        android:text="返 回"
+        android:text="@string/back_button"
         android:gravity="center"
         android:layout_centerInParent="true"
         android:layout_marginTop="30dp"

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="ProductName"
-            android:textColor="#000"
+            android:textColor="@color/colorProductName"
             android:textSize="32dp"
             android:paddingLeft="12dp"
             android:paddingTop="10dp"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="Sellpoint"
-            android:textColor="#999"
+            android:textColor="@color/colorSellpoint"
             android:textSize="28dp"
             android:layout_below="@+id/id_detail_name"
             android:paddingLeft="12dp"
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="¥0.00"
-            android:textColor="#f01414"
+            android:textColor="@color/colorPrice"
             android:textSize="28dp"
             android:paddingLeft="12dp"
             />
@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="¥0.00"
-            android:textColor="#ccc"
+            android:textColor="@color/colorOldPrice"
             android:textSize="24dp"
             android:layout_marginLeft="15dp"
             android:layout_toRightOf="@+id/id_detail_price"
@@ -76,7 +76,7 @@
             android:paddingLeft="25dp"
             android:paddingRight="25dp"
             tools:text="1-20人"
-            android:textColor="#999"
+            android:textColor="@color/colorSellpoint"
             android:textAlignment="center"
             android:textSize="24dp"
             android:layout_marginLeft="20dp"
@@ -97,6 +97,7 @@
             android:layout_height="360dp"
             android:id="@+id/id_detail_qrcode"
             android:layout_gravity="left"
+            android:background="#fff"
             />
         <ImageView
             android:layout_marginLeft="360dp"
@@ -128,6 +129,6 @@
         android:width="300dp"
         style="?android:attr/borderlessButtonStyle"
         android:height="65dp"
-        android:text="返回" />
+        android:text="@string/back_button" />
 
 </LinearLayout>

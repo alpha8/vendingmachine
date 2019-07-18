@@ -1,14 +1,18 @@
 package com.yihuyixi.vendingmachine;
 
+import android.content.Context;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.yihuyixi.vendingmachine.adapter.ChannelCheckAdapter;
@@ -49,6 +53,7 @@ public class ChannelActivity extends BaseActivity {
     @BindView(R.id.id_channel_num) EditText mChannelNo;
     @BindView(R.id.id_channel_address) EditText mAddress;
     @BindView(R.id.id_channel_btn) Button mButton;
+    @BindView(R.id.rl_channel_form) RelativeLayout mForm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +68,18 @@ public class ChannelActivity extends BaseActivity {
         inflater= LayoutInflater.from(this);
         adapter = new ChannelCheckAdapter(this,inflater,cs);
         gridView.setAdapter(adapter);
+        mForm.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    InputMethodManager im = (InputMethodManager) ChannelActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (ChannelActivity.this.getCurrentFocus() != null && ChannelActivity.this.getCurrentFocus().getWindowToken() != null) {
+                        im.hideSoftInputFromWindow(ChannelActivity.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    }
+                }
+                return false;
+            }
+        });
     }
     public ChannelBean getChannel(List<ChannelBean> cs,String strPosition){
         int position = ChannelUtils.getNo(strPosition);
@@ -78,6 +95,7 @@ public class ChannelActivity extends BaseActivity {
     }
     public void checkStop(View view){
         flag = true;
+        isAutoRun = false;
     }
     public void checkAuto(View view){
         Log.d("Button", "checkAuto" );
@@ -116,6 +134,7 @@ public class ChannelActivity extends BaseActivity {
                 return;
             }
             if(flag) {
+                isAutoRun = false;
                 return;
             }
             Log.d(CHANNEL_TAG,"enter into next position");
@@ -156,6 +175,7 @@ public class ChannelActivity extends BaseActivity {
 
     @OnClick(R.id.id_channel_btn)
     public void handleDelivery(View view) {
+        isAutoRun = false;
         String channelNo = mChannelNo.getText().toString();
         String address = mAddress.getText().toString();
         if (address == null || "".equals(address)) {
