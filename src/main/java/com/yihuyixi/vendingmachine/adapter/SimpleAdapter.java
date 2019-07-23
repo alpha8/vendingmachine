@@ -76,6 +76,7 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.MyViewHold
         });
         if (product.isSaleoff()) {
             holder.salesOff.setVisibility(View.VISIBLE);
+            holder.itemView.setClickable(false);
         } else {
             holder.salesOff.setVisibility(View.GONE);
             setItemEvent(holder);

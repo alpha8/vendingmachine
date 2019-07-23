@@ -112,9 +112,8 @@
             android:layout_height="360dp"
             android:id="@+id/iv_successIcon"
             android:src="@drawable/outbound"
-            android:layout_gravity="center"
-            android:scaleType="centerCrop"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:layout_gravity="center"/>
 
         <TextView
             android:layout_width="wrap_content"

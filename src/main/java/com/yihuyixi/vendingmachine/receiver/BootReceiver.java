@@ -16,9 +16,13 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Intent event = new Intent(context, SplashActivity.class);
-        event.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(event);
-        Log.d(AppConstants.TAG_YIHU, "Boot System is running.");
+        try {
+            Intent event = new Intent(context, SplashActivity.class);
+            event.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(event);
+            Log.d(AppConstants.TAG_YIHU, "Boot System is running.");
+        } catch(Throwable e) {
+            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+        }
     }
 }

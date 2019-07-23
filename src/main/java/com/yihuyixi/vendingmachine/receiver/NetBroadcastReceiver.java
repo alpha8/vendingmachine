@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.util.Log;
 
 import com.yihuyixi.vendingmachine.BaseActivity;
+import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.utils.NetUtils;
 
 public class NetBroadcastReceiver extends BroadcastReceiver {
@@ -13,8 +15,15 @@ public class NetBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
-            mNetworkListener.onNetChanged(NetUtils.getNetworkState(context));
+        if (mNetworkListener == null) {
+            return;
+        }
+        try {
+            if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
+                mNetworkListener.onNetChanged(NetUtils.getNetworkState(context));
+            }
+        }catch(Exception e) {
+            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
         }
     }
 

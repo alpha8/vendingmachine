@@ -42,8 +42,12 @@ public class OrderPayStateTask extends AsyncTask<String, Integer, OrderPayStateT
                         Log.d(AppConstants.TAG_YIHU, "payVO=" + payVO.toString());
                         AppConstants.LAST_SHIPMENT_LEVEL = payVO.getLevel();
                         String cluster = payVO.getLevel().substring(0, 1);
+                        String takenTips = "左边大柜";
+                        if ("B".equalsIgnoreCase(cluster)) {
+                            takenTips = "右边小柜";
+                        }
                         AppConstants.LAST_PREORDER_ID = preOrderId;
-                        return new JobResult(true, String.format("支付成功！请从%s柜拿取货物。", cluster), payVO.getChannelNo(), payVO.getPlc());
+                        return new JobResult(true, String.format("支付成功！请从%s拿取货物。", takenTips), payVO.getChannelNo(), payVO.getPlc());
                     }
                     Thread.sleep(1000);
                 } catch (AppException | InterruptedException e) {

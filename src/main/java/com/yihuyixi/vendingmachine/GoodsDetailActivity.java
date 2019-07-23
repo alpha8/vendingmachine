@@ -152,9 +152,9 @@ public class GoodsDetailActivity extends BaseActivity {
         qrcode.setName(mProductInfo.getName());
         qrcode.setIcon(mProductInfo.getPictureId());
         qrcode.setProductId(mProductInfo.getId());
-        qrcode.setPrice(mProductInfo.getPrice());
+//        qrcode.setPrice(mProductInfo.getPrice());
         // TODO: 上生产环境时，需要将价格还原到真实价格
-//        qrcode.setPrice(0.01f);
+        qrcode.setPrice(0.01f);
         qrcode.setVendingId(AppConstants.VENDOR_ID);
 
         try {
@@ -190,8 +190,12 @@ public class GoodsDetailActivity extends BaseActivity {
     }
 
     public void goBack(View view) {
-        this.mPayStateTask.cancelJob();
-        this.mTimeoutTask.cancelJob();
+        if (this.mPayStateTask != null) {
+            this.mPayStateTask.cancelJob();
+        }
+        if (this.mTimeoutTask != null) {
+            this.mTimeoutTask.cancelJob();
+        }
         this.finish();
     }
 
@@ -202,8 +206,12 @@ public class GoodsDetailActivity extends BaseActivity {
             mBanner.stopAutoPlay();
         }
         mPaySuccessLayout.setVisibility(View.GONE);
-        this.mPayStateTask.cancelJob();
-        this.mTimeoutTask.cancelJob();
+        if (this.mPayStateTask != null) {
+            this.mPayStateTask.cancelJob();
+        }
+        if (this.mTimeoutTask != null) {
+            this.mTimeoutTask.cancelJob();
+        }
     }
 
     @Override

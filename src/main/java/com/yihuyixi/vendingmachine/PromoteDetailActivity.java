@@ -84,25 +84,36 @@ public class PromoteDetailActivity extends BaseActivity{
     }
 
     private void renderBanner(List<String> icons) {
-        mBanner.setImageLoader(new ImageLoader() {
-            @Override
-            public void displayImage(Context context, Object path, ImageView imageView) {
-                Glide.with(PromoteDetailActivity.this)
-                        .load(path)
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
-                        .into(new SimpleTarget<GlideDrawable>() {
-                            @Override
-                            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                                if (resource != null) {
-                                    imageView.setImageDrawable(resource);
-                                }
-                            }
-                        });
-            }
-        });
-        mBanner.setImages(icons);
-        mBanner.setDelayTime(3000);
-        mBanner.start();
+        if (icons == null || icons.isEmpty()) {
+            return;
+        }
+        try {
+            mBanner.setImageLoader(new ImageLoader() {
+                @Override
+                public void displayImage(Context context, Object path, ImageView imageView) {
+                    try {
+                        Glide.with(PromoteDetailActivity.this)
+                                .load(path)
+                                .diskCacheStrategy(DiskCacheStrategy.SOURCE).dontAnimate()
+                                .into(new SimpleTarget<GlideDrawable>() {
+                                    @Override
+                                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                        if (resource != null) {
+                                            imageView.setImageDrawable(resource);
+                                        }
+                                    }
+                                });
+                    } catch(Exception e) {
+                        Log.d(AppConstants.TAG_YIHU, e.getMessage(), e);
+                    }
+                }
+            });
+            mBanner.setImages(icons);
+            mBanner.setDelayTime(3000);
+            mBanner.start();
+        } catch(Exception e) {
+            Log.d(AppConstants.TAG_YIHU, e.getMessage(), e);
+        }
     }
 
     private void initView(ExtGoods goods) {
@@ -199,7 +210,9 @@ public class PromoteDetailActivity extends BaseActivity{
 
     @OnClick(R.id.id_detail_back)
     public void goBack(View view) {
-        this.mTimeoutTask.cancelJob();
+        if (this.mTimeoutTask != null) {
+            this.mTimeoutTask.cancelJob();
+        }
         this.finish();
     }
 
@@ -209,7 +222,9 @@ public class PromoteDetailActivity extends BaseActivity{
         if (mBanner != null) {
             mBanner.stopAutoPlay();
         }
-        this.mTimeoutTask.cancelJob();
+        if (this.mTimeoutTask != null) {
+            this.mTimeoutTask.cancelJob();
+        }
     }
 
     @Override

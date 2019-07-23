@@ -72,7 +72,6 @@ public class VideoUtils {
                 }
             });
         } catch(Throwable e) {
-            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
             exchangeBanner = true;
             exchangeBanner(videoView, mBanner);
         }

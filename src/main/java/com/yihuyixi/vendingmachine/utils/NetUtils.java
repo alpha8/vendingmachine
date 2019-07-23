@@ -59,6 +59,20 @@ public class NetUtils {
         }
     }
 
+    public static boolean isNetworkConnected(Context context) {
+       try{
+            ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+            if (mNetworkInfo != null) {
+                return mNetworkInfo.isAvailable();
+            }
+            return false;
+        } catch(Exception e) {
+           Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+           return false;
+       }
+    }
+
     public static enum NetworkType {
         none, mobile, wifi
     }

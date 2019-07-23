@@ -275,10 +275,18 @@ public class MainActivity extends BaseActivity {
         super.onResume();
         Log.d(TAG_YIHU, "onResume");
         VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo, mBanner);
-        PushManager.getInstance().initialize(getApplicationContext(), AppPushService.class);
-        PushManager.getInstance().registerPushIntentService(getApplicationContext(), AppIntentService.class);
+        initPushService();
         if (mBanner != null) {
             mBanner.startAutoPlay();
+        }
+    }
+
+    private void initPushService() {
+        try {
+            PushManager.getInstance().initialize(getApplicationContext(), AppPushService.class);
+            PushManager.getInstance().registerPushIntentService(getApplicationContext(), AppIntentService.class);
+        } catch (Throwable e) {
+            Log.e(TAG_YIHU, e.getMessage(), e);
         }
     }
 
@@ -303,11 +311,15 @@ public class MainActivity extends BaseActivity {
         try {
             if (Utils.isBlank(AppConstants.VENDOR_ID)) {
                 AppConstants.VENDOR_ID = Utils.getImei(getApplicationContext());
+                EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_DEVICE_INFO));
             }
             Message message = mHandler.obtainMessage();
             message.what = AppConstants.FLAG_RELOAD_GOODS;
             message.obj = Api.getInstance().getGoods(AppConstants.VENDOR_ID);
             mHandler.sendMessage(message);
+            if (dialog != null) {
+                dialog.dismiss();
+            }
         } catch (NoDataException e) {
             Log.e(TAG_YIHU, "reload goods data encounted exception, message=" + e.getMessage(), e);
             Message message = mHandler.obtainMessage();
@@ -444,10 +456,15 @@ public class MainActivity extends BaseActivity {
         if (message.getType() != AppConstants.FLAG_NETWORK_ERROR) {
             return;
         }
+        if (NetUtils.isNetworkConnected(getApplicationContext())) {
+            EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_RELOAD_GOODS));
+            return;
+        }
+
         View dialogView = LayoutInflater.from(this).inflate(R.layout.reconnect_dialog, null);
         dialog = new DiyDialog(this, dialogView);
         dialog.setDialogWidth(50);
-        dialog.setDialogHeight(20);
+        dialog.setDialogHeight(15);
         dialog.show();
 
         TextView confirm = dialogView.findViewById(R.id.id_reconnect_dialog_confirm);

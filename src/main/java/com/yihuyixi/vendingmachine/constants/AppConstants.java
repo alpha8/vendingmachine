@@ -49,7 +49,7 @@ public final class AppConstants {
 
     public static final String TAG_YIHU = "YiHuYiXiApp";
 
-    public static final long SPLASH_DELAY_TIME = 3000L;
+    public static final long SPLASH_DELAY_TIME = 2000L;
     public static final int PAGE_SIZE = 80;
 
     public static String VENDOR_ID = "";

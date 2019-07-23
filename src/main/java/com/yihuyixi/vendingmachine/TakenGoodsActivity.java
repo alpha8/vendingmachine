@@ -120,7 +120,11 @@ public class TakenGoodsActivity extends BaseActivity {
                     mOrderNo = orderInfo.getOrderNo();
                     int channelNo  = Integer.parseInt(payVO.getChannelNo());
                     if (mUserVO != null) {
-                        String deliveryMsg = String.format("支付成功！请从%s柜拿取货物。", payVO.getLevel().substring(0, 1));
+                        String takenTips = "左边大柜";
+                        if ("B".equalsIgnoreCase(payVO.getLevel().substring(0, 1))) {
+                            takenTips = "右边小柜";
+                        }
+                        String deliveryMsg = String.format("支付成功！请从%s拿取货物。", takenTips);
                         mUserVO.setVendorMsg(deliveryMsg);
                     }
                     SdkUtils.getInstance().checkout(payVO.getPlc(), channelNo, channelNo);
