@@ -24,8 +24,6 @@ import android.widget.VideoView;
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
-import com.igexin.sdk.PushManager;
-import com.tencent.bugly.crashreport.CrashReport;
 import com.yihuyixi.vendingmachine.adapter.GridItem;
 import com.yihuyixi.vendingmachine.adapter.GridViewAdapter;
 import com.yihuyixi.vendingmachine.adapter.KeyboardAdapter;
@@ -44,9 +42,8 @@ import com.yihuyixi.vendingmachine.exception.AppException;
 import com.yihuyixi.vendingmachine.exception.NoDataException;
 import com.yihuyixi.vendingmachine.message.EventMessage;
 import com.yihuyixi.vendingmachine.sdk.SdkUtils;
-import com.yihuyixi.vendingmachine.service.AppIntentService;
-import com.yihuyixi.vendingmachine.service.AppPushService;
 import com.yihuyixi.vendingmachine.utils.DeviceUtils;
+import com.yihuyixi.vendingmachine.utils.MessageUtils;
 import com.yihuyixi.vendingmachine.utils.NetUtils;
 import com.yihuyixi.vendingmachine.utils.Utils;
 import com.yihuyixi.vendingmachine.utils.VideoUtils;
@@ -116,7 +113,9 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mUnbinder = ButterKnife.bind(this);
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
         this.initVideoView();
         this.initSdk();
         this.initPromoteView();
@@ -135,9 +134,9 @@ public class MainActivity extends BaseActivity {
 
     private void initBanner() {
         List<String> icons = new ArrayList<>();
-        icons.add("http://www.yihuyixi.com/ps/download/5a352b7de4b04d4e77f2da57");
-        icons.add("http://www.yihuyixi.com/ps/download/5a352b80e4b04d4e77f2da59");
-        icons.add("http://www.yihuyixi.com/ps/download/5a352b81e4b04d4e77f2da5a");
+        icons.add("http://xiaochaguan.yihuyixi.com/ps/download/5a352b7de4b04d4e77f2da57");
+        icons.add("http://xiaochaguan.yihuyixi.com/ps/download/5a352b80e4b04d4e77f2da59");
+        icons.add("http://xiaochaguan.yihuyixi.com/ps/download/5a352b81e4b04d4e77f2da5a");
         mBanner.setImageLoader(new ImageLoader() {
             @Override
             public void displayImage(Context context, Object path, ImageView imageView) {
@@ -151,8 +150,8 @@ public class MainActivity extends BaseActivity {
 
     private void initPromoteView() {
         List<GridItem> list = new ArrayList<>();
-        list.add(new GridItem("http://www.yihuyixi.com/ps/download/5cf0e849e4b05f18f0d23e62", GoodsType.TUAN));
-        list.add(new GridItem("http://www.yihuyixi.com/ps/download/5cf0e849e4b05f18f0d23e63", GoodsType.BARGAIN));
+        list.add(new GridItem("http://xiaochaguan.yihuyixi.com/ps/download/5cf0e849e4b05f18f0d23e62", GoodsType.TUAN));
+        list.add(new GridItem("http://xiaochaguan.yihuyixi.com/ps/download/5cf0e849e4b05f18f0d23e63", GoodsType.BARGAIN));
         GridViewAdapter mGridAdapter = new GridViewAdapter(this, R.layout.grid_item, list);
         mGridView.setAdapter(mGridAdapter);
         mGridAdapter.setOnItemClickListener(new GridViewAdapter.OnItemClickListener() {
@@ -175,6 +174,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG_YIHU, "main onDestroy");
         super.onDestroy();
         SdkUtils.getInstance().release();
         if (mUnbinder != null) {
@@ -253,13 +253,13 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG_YIHU, "onStart");
+        Log.d(TAG_YIHU, "main onStart");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG_YIHU, "onStop");
+        Log.d(TAG_YIHU, "main onStop");
         mVideo.pause();
         mVideo.stopPlayback();
         if (dialog != null) {
@@ -273,20 +273,10 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG_YIHU, "onResume");
+        Log.d(TAG_YIHU, "main onResume");
         VideoUtils.getInstance(getApplicationContext()).playNextVideo(mVideo, mBanner);
-        initPushService();
         if (mBanner != null) {
             mBanner.startAutoPlay();
-        }
-    }
-
-    private void initPushService() {
-        try {
-            PushManager.getInstance().initialize(getApplicationContext(), AppPushService.class);
-            PushManager.getInstance().registerPushIntentService(getApplicationContext(), AppIntentService.class);
-        } catch (Throwable e) {
-            Log.e(TAG_YIHU, e.getMessage(), e);
         }
     }
 
@@ -331,7 +321,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void updateStock(EventMessage message) {
         if (message.getType() == AppConstants.FLAG_UPDATE_STOCK_INFO) {
             Log.d(TAG_YIHU, "message=" + message);
@@ -357,10 +347,17 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.ASYNC)
-    public void deliverySucceed(EventMessage message) {
-        if (message.getType() == AppConstants.FLAG_SDK_SUCCESS && !AppConstants.IS_DEVICE_CHECKING) {
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    public void outstockSuccess(EventMessage message) {
+        if (message.getType() == AppConstants.FLAG_SDK_STOCKOUT && !AppConstants.IS_DEVICE_CHECKING) {
             SdkResponse response = (SdkResponse) message.getData();
+            if (response == null) {
+                return;
+            }
+            if (!MessageUtils.getInstance().exist(response)) {
+                Log.d(AppConstants.TAG_YIHU, "duplicated message has been rejected. SDK response" + response.getMessage());
+                return;
+            }
             Log.d(AppConstants.TAG_YIHU, "deliverySucceed SDK response=" + response.getMessage());
             if (response.getType() == WMSSendType.SHIPMENTS && response.isSuccess()) {
                 // ChannelVO: {"channelNo":"21","level":"B1","count":1, "deviceId":"202227061185125"}
@@ -374,8 +371,8 @@ public class MainActivity extends BaseActivity {
                 try {
                     ProductInfo pi = Api.getInstance().stockOut(json);
                     Log.d(AppConstants.TAG_YIHU, "stock out response=" + pi);
-                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_STOCK_INFO, pi));
-                } catch (AppException e) {
+                    EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_UPDATE_STOCK_INFO, pi));
+                } catch (Exception e) {
                     Log.e(TAG_YIHU, e.getMessage(), e);
                 }
             } else {
@@ -391,8 +388,7 @@ public class MainActivity extends BaseActivity {
                 try {
                     ProductInfo pi = Api.getInstance().takenError(json);
                     Log.d(AppConstants.TAG_YIHU, "takenError response=" + pi);
-                    EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_UPDATE_STOCK_INFO, pi));
-                } catch (AppException e) {
+                } catch (Exception e) {
                     Log.e(TAG_YIHU, e.getMessage(), e);
                 }
             }
@@ -465,6 +461,7 @@ public class MainActivity extends BaseActivity {
         dialog = new DiyDialog(this, dialogView);
         dialog.setDialogWidth(50);
         dialog.setDialogHeight(15);
+        dialog.setCanceledOnTouchOutside(true);
         dialog.show();
 
         TextView confirm = dialogView.findViewById(R.id.id_reconnect_dialog_confirm);

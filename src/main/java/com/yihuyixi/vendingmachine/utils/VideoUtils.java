@@ -21,9 +21,7 @@ public class VideoUtils {
     private static VideoUtils instance = new VideoUtils();
 
     private VideoUtils() {
-        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/85f5d37d4564972818869478170/v.f20.mp4");
         videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/2dcd67395285890789363058257/v.f20.mp4");
-        videoUrls.add("http://1252423336.vod2.myqcloud.com/950efb46vodtransgzp1252423336/85f5db404564972818869478317/v.f20.mp4");
     }
 
     public static VideoUtils getInstance(Context context) {
@@ -38,10 +36,14 @@ public class VideoUtils {
     public void playNextVideo(final VideoView videoView, final Banner mBanner) {
         try {
             videoView.setVideoPath(getNextVideo());
+            videoView.requestFocus();
             videoView.start();
             videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mPlayer) {
+//                    mPlayer.setDisplay(null);
+//                    mPlayer.reset();
+//                    mPlayer.setDisplay(videoView.getHolder());
                     exchangeBanner = !exchangeBanner;
                     if (exchangeBanner) {
                         exchangeBanner(videoView, mBanner);

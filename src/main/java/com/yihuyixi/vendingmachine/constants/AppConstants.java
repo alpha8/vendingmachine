@@ -3,8 +3,8 @@ package com.yihuyixi.vendingmachine.constants;
 import com.yihuyixi.vendingmachine.bean.DeviceInfo;
 
 public final class AppConstants {
-    public static final String BASE_API = "http://www.yihuyixi.com";
-    public static final String CDN_BASE_API = "http://imgcdn.yihuyixi.com";
+    public static final String BASE_API = "http://xiaochaguan.yihuyixi.com";
+    public static final String CDN_BASE_API = "http://xiaochaguan.yihuyixi.com";
     public static final String CMS_API = BASE_API + "/cms";
     public static final String PS_API = CDN_BASE_API + "/ps/download";
     public static final String WX_API = BASE_API + "/wxservice";
@@ -18,6 +18,7 @@ public final class AppConstants {
     public static final int FLAG_SDK_INIT_SUCCESS = 1000;
     public static final int FLAG_SDK_INIT_FAIL = 1001;
     public static final int FLAG_SDK_SUCCESS = 1100;
+    public static final int FLAG_SDK_STOCKOUT = 1200;
     public static final int FLAG_SDK_FAIL = 1101;
 
     public static final int FLAG_UPDATE_COUNTDOWN = 6;

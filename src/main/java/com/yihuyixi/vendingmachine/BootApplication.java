@@ -3,11 +3,13 @@ package com.yihuyixi.vendingmachine;
 import android.app.Application;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.Handler;
 import android.util.Log;
 
+import com.igexin.sdk.PushManager;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
+import com.yihuyixi.vendingmachine.service.AppIntentService;
+import com.yihuyixi.vendingmachine.service.AppPushService;
 
 public class BootApplication extends Application {
     @Override
@@ -15,6 +17,16 @@ public class BootApplication extends Application {
         super.onCreate();
         Thread.setDefaultUncaughtExceptionHandler(restartHandler);
         initCrashReport();
+        initPushService();
+    }
+
+    private void initPushService() {
+        try {
+            PushManager.getInstance().initialize(getApplicationContext(), AppPushService.class);
+            PushManager.getInstance().registerPushIntentService(getApplicationContext(), AppIntentService.class);
+        } catch (Throwable e) {
+            Log.e(AppConstants.TAG_YIHU, e.getMessage(), e);
+        }
     }
 
     private void initCrashReport() {

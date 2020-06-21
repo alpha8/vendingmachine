@@ -4,6 +4,8 @@ import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.MainActivity;
 
 import java.io.Serializable;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 在WMDeviceToAppCallBack回调中，28为出货指令回调，其中s.substring(34,36)截取到为出货结果，详细为：
@@ -39,6 +41,7 @@ import java.io.Serializable;
 public class SdkResponse implements Serializable {
     private String cmdString;
     private WMSSendType type;
+    private String messageId = UUID.randomUUID().toString();
 
     public SdkResponse() {
 
@@ -119,11 +122,32 @@ public class SdkResponse implements Serializable {
         return "28".equals(getCode()) && "00".equals(getStatus());
     }
 
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
     @Override
     public String toString() {
         return "SdkResponse{" +
                 "cmdString='" + cmdString + '\'' +
+                "messageId='" + messageId + '\'' +
                 ", type='" + type + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        SdkResponse response = (SdkResponse) o;
+        return Objects.equals(messageId, response.messageId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(messageId);
     }
 }

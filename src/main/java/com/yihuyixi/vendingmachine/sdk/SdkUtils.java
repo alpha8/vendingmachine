@@ -1,7 +1,8 @@
 package com.yihuyixi.vendingmachine.sdk;
 
 import android.content.Context;
-import android.content.SyncAdapterType;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.example.mylibrary.serialportlibrary.WMSerialportManager;
@@ -12,6 +13,7 @@ import com.example.mylibrary.serialportlibrary.protocol.WMSSendType;
 import com.yihuyixi.vendingmachine.bean.SdkResponse;
 import com.yihuyixi.vendingmachine.constants.AppConstants;
 import com.yihuyixi.vendingmachine.message.EventMessage;
+import com.yihuyixi.vendingmachine.utils.MessageUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -54,7 +56,10 @@ public class SdkUtils {
             @Override
             public void onSuccess(WMSSendType type, String s) {
                 Log.i(AppConstants.TAG_YIHU, String.format("addWMDeviceToAppCallBack onSuccess: type=%s, 回调指令为=%s", type, s));
-                EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_SDK_SUCCESS, new SdkResponse(type, s)));
+                SdkResponse response = new SdkResponse(type, s);
+                EventBus.getDefault().postSticky(new EventMessage(AppConstants.FLAG_SDK_SUCCESS, response));
+                MessageUtils.getInstance().produce(response);
+                EventBus.getDefault().post(new EventMessage(AppConstants.FLAG_SDK_STOCKOUT, response));
             }
 
             @Override

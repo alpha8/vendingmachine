@@ -428,6 +428,7 @@ public class Api {
         try {
             Response response = client.newCall(request).execute();
             String result = response.body().string();
+            Log.d(AppConstants.TAG_YIHU, String.format("result=%s", result));
             if (!response.isSuccessful()) {
                 throw new AppException("网络异常，请稍候再试！");
             }

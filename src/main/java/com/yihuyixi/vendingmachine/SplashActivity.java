@@ -28,7 +28,7 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 try {
                     // TODO: 模拟机测试时启用
-//                    AppConstants.VENDOR_ID = "867223025692567";
+//                    AppConstants.VENDOR_ID = "0c:9a:42:1a:43:0c";
                     AppConstants.VENDOR_ID = Utils.getImei(getApplicationContext());
                     DeviceInfo di = Api.getInstance().getDeviceInfo(AppConstants.VENDOR_ID);
                     if (di != null) {

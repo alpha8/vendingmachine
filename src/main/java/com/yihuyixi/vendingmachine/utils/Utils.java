@@ -105,16 +105,17 @@ public class Utils {
     }
 
     public static String getImei(Context context) throws AppException {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
-            Log.d(AppConstants.TAG_YIHU, "READ_PHONE_STATE has permission.");
-            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-            String imei = tm.getDeviceId();
-            if (isNotBlank(imei)) {
-                Log.d(AppConstants.TAG_YIHU, "imei=" + imei);
-                return imei;
-            }
-        }
-        throw new AppException("获取IMEI号失败！");
+//        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+//            Log.d(AppConstants.TAG_YIHU, "READ_PHONE_STATE has permission.");
+//            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+//            String imei = tm.getDeviceId();
+//            if (isNotBlank(imei)) {
+//                Log.d(AppConstants.TAG_YIHU, "imei=" + imei);
+//                return imei;
+//            }
+//        }
+//        throw new AppException("获取IMEI号失败！");
+        return getDeviceId(context);
     }
 
     public static boolean isNotBlank(String str) {
